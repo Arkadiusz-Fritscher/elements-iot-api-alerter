@@ -42,6 +42,16 @@ router.post("/", validateAuth, async (req: Request, res: Response, next: NextFun
   // Generate token
   const token = generateTokenObject(user);
 
+  // Update lastLogin
+  await prisma.user.update({
+    where: {
+      id: user.id,
+    },
+    data: {
+      lastLogin: new Date(),
+    },
+  });
+
   res.status(200).json({
     id: user.id,
     email: user.email,
