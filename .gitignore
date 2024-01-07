@@ -73,3 +73,6 @@ typings/
 .serverless
 
 dist
+
+# local docker developing database
+db
