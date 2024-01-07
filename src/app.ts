@@ -3,12 +3,18 @@ import morgan from "morgan";
 import helmet from "helmet";
 import cors from "cors";
 
-import * as middlewares from "./middlewares";
-import api from "./api";
-import MessageResponse from "./interfaces/MessageResponse";
+// Middlewares
+import { protectedRoute } from "./middlewares/protectedMiddleware";
+import { errorHandler, notFound } from "./middlewares/errorMiddlewares";
 
+// Routes
+import api from "./routes";
+
+// Utils
+import MessageResponse from "./interfaces/MessageResponse";
 require("dotenv").config();
 
+// App
 const app = express();
 
 app.use(morgan("dev"));
@@ -16,18 +22,15 @@ app.use(helmet());
 app.use(cors());
 app.use(express.json());
 
-app.get<{}, MessageResponse>("/", (req, res) => {
-  res.json({
-    message: "🦄🌈✨👋🌎🌍🌏✨🌈🦄",
-  });
-});
+// Routes
+// Before API Route
+app.use(protectedRoute);
 
-app.use(middlewares.authenticate);
-
+// API Routes
 app.use("/api/v1", api);
 
-// app.use(middlewares.logErrors);
-app.use(middlewares.notFound);
-app.use(middlewares.errorHandler);
+// After API Route
+app.use(notFound);
+app.use(errorHandler);
 
 export default app;
