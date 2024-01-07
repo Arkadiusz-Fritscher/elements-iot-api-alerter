@@ -22,8 +22,11 @@ app.get<{}, MessageResponse>("/", (req, res) => {
   });
 });
 
+app.use(middlewares.authenticate);
+
 app.use("/api/v1", api);
 
+// app.use(middlewares.logErrors);
 app.use(middlewares.notFound);
 app.use(middlewares.errorHandler);
 

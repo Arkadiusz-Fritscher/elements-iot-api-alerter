@@ -12,7 +12,21 @@ datasource db {
 
 // Define the `User` table in the database
 model User {
-  id    Int     @id @default(autoincrement())
-  name  String?
-  email String  @unique
+  id        Int       @id @default(autoincrement())
+  role      Role      @default(USER)
+  firstName String?
+  lastName  String?
+  username  String    @unique
+  email     String    @unique
+  password  String    @default("EsweFernwaerme2024")
+  lastLogin DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+// Define a `Role` enum in your schema
+enum Role {
+  VIEWER
+  USER
+  ADMIN
 }
