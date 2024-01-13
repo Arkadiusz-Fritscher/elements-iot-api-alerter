@@ -16,8 +16,48 @@ export const validateAuth = [
   body("password").isLength({ min: 6 }).escape(),
 ];
 
-// POST /statistics/type
+// POST /statistics
 export const validateCreateStatistic = [
+  body("value").isFloat().withMessage("Ungültiger Wert (value)"),
+  body("sampleSize").isInt().withMessage("Ungültige Stichprobengröße (sampleSize)"),
+  body("typeId")
+    .exists()
+    .withMessage("typeId muss angegeben werden")
+    .isInt()
+    .withMessage("Ungültige Statistik-Typ-ID")
+    .custom((value) => {
+      return prisma.statisticTypeDefinition.findUnique({ where: { id: value } }).then((statistic) => {
+        if (!statistic) {
+          return Promise.reject("Es existiert kein Statistik-Typ mit dieser ID");
+        }
+      });
+    }),
+  body("deviceId")
+    .exists()
+    .withMessage("deviceId muss angegeben werden")
+    .trim()
+    .isUUID()
+    .withMessage("Ungültige Geräte-ID")
+    .custom((value, { req }) => {
+      return prisma.device
+        .findUnique({
+          where: { id: value },
+          select: { statistic: { include: { type: true } } },
+        })
+        .then((device) => {
+          if (!device) {
+            return Promise.reject("Es existiert kein Gerät mit dieser ID");
+          }
+
+          if (device?.statistic.some((statistic) => statistic.type.id === req.body.typeId)) {
+            return Promise.reject("Es existiert bereits eine Statistik dieses Typs für dieses Gerät");
+          }
+        });
+    }),
+];
+
+// POST /statistics/type
+export const validateCreateStatisticType = [
   body("name")
     .exists()
     .withMessage("Name muss angegeben werden")
@@ -43,7 +83,7 @@ export const validateCreateStatistic = [
 ];
 
 // PATCH /statistics/type/:id
-export const validateUpdateStatistic = [
+export const validateUpdateStatisticType = [
   param("id").toInt().isInt().withMessage("Ungültige Statistik-Typ-ID"),
   body("name")
     .optional()

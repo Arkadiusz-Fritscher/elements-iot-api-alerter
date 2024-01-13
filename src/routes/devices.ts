@@ -42,7 +42,7 @@ router.get(
 
     const device = await prisma.device.findUnique({
       where: {
-        deviceId: id,
+        id: id,
       },
     });
 

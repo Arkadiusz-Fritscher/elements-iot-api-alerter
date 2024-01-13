@@ -32,7 +32,7 @@ enum Role {
 }
 
 model Device {
-  deviceId    String       @id @default(uuid())
+  id          String       @id @default(uuid())
   slug        String       @unique
   name        String
   createdAt   DateTime     @default(now())
@@ -60,12 +60,13 @@ model StatisticTypeDefinition {
 }
 
 model Statistic {
-  id         Int                      @id @default(autoincrement())
+  id         Int                     @id @default(autoincrement())
   value      Float
   sampleSize Int
-  device     Device                   @relation(fields: [deviceId], references: [deviceId])
+  device     Device                  @relation(fields: [deviceId], references: [id])
   deviceId   String
-  createdAt  DateTime?                @default(now())
-  updatedAt  DateTime?                @updatedAt
-  type       StatisticTypeDefinition? @relation(fields: [id], references: [id])
+  createdAt  DateTime?               @default(now())
+  updatedAt  DateTime?               @updatedAt
+  type       StatisticTypeDefinition @relation(fields: [typeId], references: [id])
+  typeId     Int
 }
