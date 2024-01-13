@@ -1,5 +1,10 @@
 import app from "./app";
 
+import { syncLogic } from "./services/dataStorage";
+// import { main } from "./services/dataAccess";
+
+syncLogic();
+
 const port = process.env.PORT || 3333;
 app.listen(port, () => {
   /* eslint-disable no-console */

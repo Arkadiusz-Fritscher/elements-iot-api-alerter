@@ -30,3 +30,42 @@ enum Role {
   USER
   ADMIN
 }
+
+model Device {
+  deviceId    String       @id @default(uuid())
+  slug        String       @unique
+  name        String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  lastSeen    DateTime?
+  lastReading DateTime?
+  status      DeviceStatus @default(UNKNOWN)
+  statistic   Statistic[]
+}
+
+enum DeviceStatus {
+  OK
+  ERROR
+  UNKNOWN
+}
+
+model StatisticTypeDefinition {
+  id          Int         @id @default(autoincrement())
+  name        String      @unique
+  description String?
+  unit        String
+  createdAt   DateTime?   @default(now())
+  updatedAt   DateTime?   @updatedAt
+  statistics  Statistic[]
+}
+
+model Statistic {
+  id         Int                      @id @default(autoincrement())
+  value      Float
+  sampleSize Int
+  device     Device                   @relation(fields: [deviceId], references: [deviceId])
+  deviceId   String
+  createdAt  DateTime?                @default(now())
+  updatedAt  DateTime?                @updatedAt
+  type       StatisticTypeDefinition? @relation(fields: [id], references: [id])
+}

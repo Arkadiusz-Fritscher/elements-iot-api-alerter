@@ -5,6 +5,8 @@ import MessageResponse from "../interfaces/MessageResponse";
 import auth from "./auth";
 import signup from "./signup";
 import users from "./users";
+import statistics from "./statistics";
+import devices from "./devices";
 
 const router = express.Router();
 
@@ -18,5 +20,7 @@ router.get<{}, MessageResponse>("/", (req, res) => {
 router.use("/auth", auth);
 router.use("/signup", signup);
 router.use("/users", users);
+router.use("/statistics", statistics);
+router.use("/devices", devices);
 
 export default router;

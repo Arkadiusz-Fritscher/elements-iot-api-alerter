@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import { Prisma } from "@prisma/client";
 import { Request } from "express";
+import { Data } from "../interfaces/ElementsResponse";
 
 const calculateExpiration = (expiresIn: string | number): number | null => {
   if (typeof expiresIn === "string") {
@@ -97,3 +98,48 @@ export const isAuth = (req: Request) => {
 
   return false;
 };
+
+/**
+ * Reduces an array of objects by keeping only specified keys.
+ * @param data The array of objects to be reduced.
+ * @param keysToKeep The keys to keep in each object.
+ * @returns The reduced array of objects.
+ */
+export function reduceDataArray(data: any[], keysToKeep: string[]) {
+  return data.map((obj) => {
+    const reducedObj: { [key: string]: any } = {};
+
+    keysToKeep.forEach((key) => {
+      if (obj.hasOwnProperty(key)) {
+        reducedObj[key] = obj[key];
+      }
+    });
+
+    return reducedObj;
+  });
+}
+
+type ExtractDataValuesByKey = {
+  [key in keyof Data]: Data[key][];
+};
+/**
+ * Extracts data values from an array of objects based on the specified keys.
+ *
+ * @param dataArray The array of objects from which to extract data values.
+ * @param keysToExtract The keys of the data values to extract.
+ * @returns An object containing the extracted data values.
+ */
+export function extractDataValuesByKey(dataArray: Data[], keysToExtract: (keyof Data)[]) {
+  const extractedValues = {} as ExtractDataValuesByKey;
+
+  for (const key of keysToExtract) {
+    // Check if the key exists in the data array
+    if (!dataArray.some((obj) => obj.hasOwnProperty(key))) {
+      continue;
+    }
+    // @ts-ignore
+    extractedValues[key] = dataArray.map((obj) => obj[key]);
+  }
+
+  return extractedValues;
+}
