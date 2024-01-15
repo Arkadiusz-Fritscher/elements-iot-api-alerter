@@ -7,6 +7,7 @@ import signup from "./signup";
 import users from "./users";
 import statistics from "./statistics";
 import devices from "./devices";
+import readings from "./readings";
 
 const router = express.Router();
 
@@ -22,5 +23,6 @@ router.use("/signup", signup);
 router.use("/users", users);
 router.use("/statistics", statistics);
 router.use("/devices", devices);
+router.use("/readings", readings);
 
 export default router;

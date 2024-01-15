@@ -14,12 +14,12 @@ import {
 
 const { devices } = require("../../db/readings.json");
 
-const removeOutliers = (dataset: any[]) => {
+const removeOutliersFromReadings = (dataset: number[], factor: number = 1.5) => {
   const q1 = quantile(dataset, 0.25);
   const q3 = quantile(dataset, 0.75);
   const iqr = interquartileRange(dataset);
-  const lowerBound = q1 - 1.5 * iqr;
-  const upperBound = q3 + 1.5 * iqr;
+  const lowerBound = q1 - factor * iqr;
+  const upperBound = q3 + factor * iqr;
 
   return dataset.filter((value) => value >= lowerBound && value <= upperBound);
 };
@@ -37,7 +37,7 @@ const calcStatisticalValues = (data: ExtractDataValuesByKey) => {
   } as any;
 
   Object.entries(data).forEach(([key, valueArray]: [string, any[]]) => {
-    const filteredValues = removeOutliers(valueArray);
+    const filteredValues = removeOutliersFromReadings(valueArray);
 
     statistics[key] = {
       mean: mean(filteredValues),

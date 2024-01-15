@@ -99,3 +99,21 @@ export const validateUpdateStatisticType = [
     .escape(),
   body("description").optional().trim().escape(),
 ];
+
+// GET /readings/:id
+export const validateGetReadings = [
+  param("id")
+    .exists()
+    .withMessage("ID muss angegeben werden")
+    .trim()
+    .isUUID()
+    .withMessage("Ungültige ID")
+    .custom((value) => {
+      return prisma.device.findUnique({ where: { id: value } }).then((device) => {
+        if (!device) {
+          return Promise.reject("Es existiert kein Gerät mit dieser ID");
+        }
+      });
+    })
+    .escape(),
+];

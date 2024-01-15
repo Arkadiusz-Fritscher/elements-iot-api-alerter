@@ -3,6 +3,7 @@ import { Device } from "elementiot-client/lib/models";
 import { getDevices, getReadings as getElementReadings } from "./dataAccess";
 import { DeviceData, ReadingData } from "../interfaces/ElementsResponse";
 import { reduceReadingsToUniqueMeasTimestamps } from "./utils";
+import logger from "./useLogger";
 const config = require("../../config.json");
 
 const prisma = new PrismaClient();
@@ -101,12 +102,12 @@ export const storeNewDevices = async (devices: DeviceData[]) => {
   const notStoredDevices = await removeStoredDevices(devices);
 
   if (notStoredDevices.length === 0 || !notStoredDevices?.length) {
-    console.log("No new devices to store");
+    logger.info("No new devices to store");
     return [];
   }
 
   const { count } = await storeDevices(notStoredDevices);
-  console.log(`${count} new devices stored`);
+  logger.info(`${count} new devices stored`);
 
   return notStoredDevices;
 };
@@ -120,7 +121,7 @@ export const storeNewDevices = async (devices: DeviceData[]) => {
 const updateStoredDevice = async (device: DeviceData) => {
   try {
     if (!device) {
-      console.info("No Device to update provided");
+      logger.warn("No Device to update provided");
       return;
     }
 
@@ -133,10 +134,10 @@ const updateStoredDevice = async (device: DeviceData) => {
       data: deviceData,
     });
 
-    console.info("Updated Device ", updatedDeviceResponse.name);
+    logger.info(`Updated Device ${updatedDeviceResponse.name}`);
     return updatedDeviceResponse;
   } catch (err) {
-    console.log(err);
+    logger.error(err);
   }
 };
 
@@ -149,17 +150,17 @@ const updateStoredDevice = async (device: DeviceData) => {
 export const updateStoredDevices = async (devices: DeviceData[]) => {
   try {
     if (!devices?.length) {
-      console.info("No Devices to update provided");
+      logger.warn("No Devices to update provided");
       return;
     }
 
     const updatedDevices = await Promise.all(devices.map((device) => updateStoredDevice(device)));
 
-    console.info("Updated Devices ", updatedDevices.length);
+    logger.info("Updated Devices ", updatedDevices.length);
 
     return updatedDevices;
   } catch (err) {
-    console.log(err);
+    logger.error(err);
   }
 };
 
@@ -171,7 +172,7 @@ export const updateStoredDevices = async (devices: DeviceData[]) => {
 export const createAndUpdateDevices = async (devices: DeviceData[]) => {
   try {
     if (!devices?.length) {
-      console.info("No Devices to handle provided");
+      logger.warn("No Devices to handle provided");
       return;
     }
 
@@ -204,7 +205,7 @@ export const createAndUpdateDevices = async (devices: DeviceData[]) => {
 
     return { updatedDevices: alreadyStoredDevices.length, newDevices: notStoredDevices.length };
   } catch (err) {
-    console.log(err);
+    logger.error(err);
   }
 };
 
@@ -234,7 +235,7 @@ export const storeReading = async (data: ReadingData) => {
 
     return storedReading;
   } catch (err) {
-    console.log(err);
+    logger.error(err);
   }
 };
 
@@ -246,7 +247,7 @@ export const storeReadings = async (readings: ReadingData[]) => {
     const result = await Promise.all(uniqueReadings.map((reading) => storeReading(reading)));
     return result;
   } catch (err) {
-    console.log(err);
+    logger.error(err);
   }
 };
 
@@ -255,7 +256,7 @@ export const initiateDeviceReadings = async (deviceId: Prisma.ReadingUncheckedCr
     const initialReadings = config.options.maxInitialReadings || 0;
 
     if (!deviceId || deviceId.length < 5) {
-      console.log("No deviceId provided");
+      logger.warn("No deviceId provided");
       return;
     }
 
@@ -266,14 +267,15 @@ export const initiateDeviceReadings = async (deviceId: Prisma.ReadingUncheckedCr
     });
 
     if (currentReadingsLength >= initialReadings) {
+      logger.info(`Device ${deviceId} already has ${currentReadingsLength} readings`);
       return;
     }
 
     // If no readings are stored for the device, get initial readings
-    if (currentReadingsLength === 0) {
+    if (initialReadings && currentReadingsLength === 0) {
       // Get Readings for device
       const elementReadings = await getElementReadings(deviceId, {
-        limit: initialReadings,
+        limit: +initialReadings * 1.3,
         sort: "inserted_at",
         sortDirection: "desc",
         filter: "data.iso1!=null&&data.iso2!=null&&data.loop1!=null&&data.loop2!=null",
@@ -283,40 +285,49 @@ export const initiateDeviceReadings = async (deviceId: Prisma.ReadingUncheckedCr
 
       const storedReadings = await storeReadings(elementReadings);
 
-      console.log("Stored readings: ", storedReadings?.length);
+      logger.info(`Initial readings stored: ${storedReadings?.length}`);
 
       return storedReadings;
     }
 
-    // Get Readings AFTER the OLDEST stored reading
+    if (initialReadings && currentReadingsLength > 0 && currentReadingsLength < initialReadings) {
+      // Get Readings AFTER the OLDEST stored reading
 
-    const newestStoredReading = await prisma.reading.findFirst({
-      where: {
-        deviceId,
-      },
-      orderBy: {
-        measuredAt: "asc",
-      },
-    });
+      logger.info(
+        `Device ${deviceId} has ${currentReadingsLength} readings. Getting ${
+          initialReadings - currentReadingsLength
+        } more}`
+      );
 
-    const elementReadings = await getElementReadings(deviceId, {
-      limit: initialReadings - currentReadingsLength,
-      sort: "inserted_at",
-      sortDirection: "desc",
-      retrieveAfterId: newestStoredReading?.id,
-      filter: `data.iso1!=null&&data.iso2!=null&&data.loop1!=null&&data.loop2!=null`,
-    });
+      const newestStoredReading = await prisma.reading.findFirst({
+        where: {
+          deviceId,
+        },
+        orderBy: {
+          measuredAt: "asc",
+        },
+      });
 
-    if (!elementReadings?.length) {
-      console.log(`No more readings to store for device ${newestStoredReading?.deviceId}`);
-      return;
+      const elementReadings = await getElementReadings(deviceId, {
+        limit: initialReadings - currentReadingsLength,
+        sort: "inserted_at",
+        sortDirection: "desc",
+        retrieveAfterId: newestStoredReading?.id,
+        filter: `data.iso1!=null&&data.iso2!=null&&data.loop1!=null&&data.loop2!=null`,
+      });
+
+      if (!elementReadings?.length) {
+        logger.info(`No more readings to store for device ${newestStoredReading?.deviceId}`);
+        return;
+      }
+
+      const storedReadings = await storeReadings(elementReadings);
+      logger.info(`Initial readings stored: ${storedReadings?.length}`);
+      return storedReadings;
     }
 
-    const storedReadings = await storeReadings(elementReadings);
-
-    console.log("Stored readings: ", storedReadings?.length);
-    return storedReadings;
+    return;
   } catch (err) {
-    console.log(err);
+    logger.error(err);
   }
 };

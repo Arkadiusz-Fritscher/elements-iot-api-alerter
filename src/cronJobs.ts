@@ -1,4 +1,5 @@
 "use strict";
+import logger from "./services/useLogger";
 import { getStatisticalValues } from "./services/dataAnalyze";
 import { PrismaClient } from "@prisma/client";
 import { getDevices as getElementsDevices, getReadings } from "./services/dataAccess";
@@ -12,7 +13,8 @@ const prisma = new PrismaClient();
 // Updates stored devices if updated in Elements
 const handleDevicesAndReadings = async (force: boolean = false) => {
   if (!config?.options || !config?.settings) {
-    console.log("No config found");
+    logger.warn("No config file found");
+
     return Promise.reject("No config found");
   }
 
@@ -33,12 +35,12 @@ const handleDevicesAndReadings = async (force: boolean = false) => {
     lastReadingsInitiation === undefined ||
     lastDevicesInitiation === undefined
   ) {
-    console.log("Required settings are not set");
+    logger.warn("Required settings are not set");
     return Promise.reject("Required settings are not set");
   }
 
   if (!initiateReadings && !initiateDevices) {
-    console.log("Device and reading initiation is disabled");
+    logger.info("Device and reading initiation is disabled");
     return Promise.resolve("Device and reading initiation is disabled");
   }
 
@@ -46,13 +48,13 @@ const handleDevicesAndReadings = async (force: boolean = false) => {
   const elementsDevices = await getElementsDevices();
 
   if (!elementsDevices.length) {
-    console.log("Initiation failed. No devices found");
+    logger.warn("Initiation failed. No devices found");
     return Promise.reject("Initiation failed. No devices found");
   }
 
   const now = new Date().getTime();
 
-  console.group("Initiation started!");
+  logger.info("Initiation started!");
 
   // Handle devices
   if (
@@ -60,7 +62,7 @@ const handleDevicesAndReadings = async (force: boolean = false) => {
       now - initiateDevicesIntervalMinutes * 60 * 1000 > new Date(lastDevicesInitiation).getTime()) ||
     (initiateDevices && force)
   ) {
-    console.log("Initiating devices");
+    logger.info("Initiating devices");
     // Create and update devices in database
     await createAndUpdateDevices(elementsDevices);
 
@@ -74,23 +76,22 @@ const handleDevicesAndReadings = async (force: boolean = false) => {
       ),
       (err) => {
         if (err) {
-          console.log("Error writing to config file: ", err);
+          logger.warn("Error writing to config file: ", err);
           return;
         }
-        console.log("Last devices initiation successful updated in config file!");
+        logger.info("Last devices initiation successful updated in config file!");
         return;
       }
     );
   } else {
-    console.group("Device initiation skipped");
-    console.log("- Last initiation: ", new Date(lastDevicesInitiation).toISOString());
-    console.log(
+    logger.info("Device initiation skipped");
+    logger.info("Last initiation: ", new Date(lastDevicesInitiation).toISOString());
+    logger.info(
       "- Next initiation: ",
       new Date(
         new Date(lastDevicesInitiation).getTime() + initiateDevicesIntervalMinutes * 60 * 1000
       ).toISOString()
     );
-    console.groupEnd();
   }
 
   // Handle readings
@@ -99,7 +100,7 @@ const handleDevicesAndReadings = async (force: boolean = false) => {
       now - initiateReadingsIntervalMinutes * 60 * 1000 > new Date(lastReadingsInitiation).getTime()) ||
     (initiateReadings && force)
   ) {
-    console.log("Initiating readings");
+    logger.info("Initiating readings");
     // Get Elements devices IDs
     const deviceIds = elementsDevices.map((device) => device.id);
 
@@ -116,33 +117,30 @@ const handleDevicesAndReadings = async (force: boolean = false) => {
       ),
       (err) => {
         if (err) {
-          console.log(err);
+          logger.error("Error writing to config file: ", err);
           return;
         }
-        console.log("Last readings initiation successful updated in config file!");
+        logger.info("Last readings initiation successful updated in config file!");
+        return;
       }
     );
   } else {
-    console.group("Reading initiation skipped");
-    console.log("- Last initiation: ", new Date(lastReadingsInitiation).toISOString());
-    console.log(
+    logger.info("Reading initiation skipped");
+    logger.info("- Last initiation: ", new Date(lastReadingsInitiation).toISOString());
+    logger.info(
       "- Next initiation: ",
       new Date(
         new Date(lastReadingsInitiation).getTime() + initiateReadingsIntervalMinutes * 60 * 1000
       ).toISOString()
     );
-    console.groupEnd();
   }
-
-  console.groupEnd();
-  console.log("Initiation finished!");
+  logger.info("Initiation finished!");
   return Promise.resolve("Initiation finished!");
 };
 
 const cronJobs = async () => {
   const force = false;
-
-  console.info("Cron job started!");
+  logger.info("Cron job started!");
   await handleDevicesAndReadings(force);
 };
 
