@@ -42,14 +42,14 @@ export const validateCreateStatistic = [
       return prisma.device
         .findUnique({
           where: { id: value },
-          select: { statistic: { include: { type: true } } },
+          select: { statistics: { include: { type: true } } },
         })
         .then((device) => {
           if (!device) {
             return Promise.reject("Es existiert kein Gerät mit dieser ID");
           }
 
-          if (device?.statistic.some((statistic) => statistic.type.id === req.body.typeId)) {
+          if (device?.statistics.some((statistic) => statistic.type.id === req.body.typeId)) {
             return Promise.reject("Es existiert bereits eine Statistik dieses Typs für dieses Gerät");
           }
         });

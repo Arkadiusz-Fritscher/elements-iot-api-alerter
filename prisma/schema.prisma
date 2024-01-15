@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,43 +7,29 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Define the `User` table in the database
 model User {
   id        Int       @id @default(autoincrement())
-  role      Role      @default(USER)
-  firstName String?
-  lastName  String?
-  username  String    @unique
   email     String    @unique
-  password  String    @default("EsweFernwaerme2024")
-  lastLogin DateTime?
   createdAt DateTime  @default(now())
+  firstName String?
+  lastLogin DateTime?
+  lastName  String?
+  password  String    @default("EsweFernwaerme2024")
+  role      Role      @default(USER)
   updatedAt DateTime  @updatedAt
-}
-
-// Define a `Role` enum in your schema
-enum Role {
-  VIEWER
-  USER
-  ADMIN
+  username  String    @unique
 }
 
 model Device {
-  id          String       @id @default(uuid())
-  slug        String       @unique
-  name        String
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  lastSeen    DateTime?
-  lastReading DateTime?
-  status      DeviceStatus @default(UNKNOWN)
-  statistic   Statistic[]
-}
-
-enum DeviceStatus {
-  OK
-  ERROR
-  UNKNOWN
+  id         String       @id @default(uuid())
+  slug       String       @unique
+  name       String
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  lastSeen   DateTime?
+  status     DeviceStatus @default(OK)
+  readings   Reading[]
+  statistics Statistic[]
 }
 
 model StatisticTypeDefinition {
@@ -59,14 +42,38 @@ model StatisticTypeDefinition {
   statistics  Statistic[]
 }
 
+model Reading {
+  id         String   @id @default(uuid())
+  deviceId   String
+  measuredAt DateTime
+  battery    Float
+  iso1       Float
+  iso2       Float
+  loop1      Float
+  loop2      Float
+  temp       Int?
+  device     Device   @relation(fields: [deviceId], references: [id])
+}
+
 model Statistic {
-  id         Int                     @id @default(autoincrement())
   value      Float
   sampleSize Int
-  device     Device                  @relation(fields: [deviceId], references: [id])
-  deviceId   String
   createdAt  DateTime?               @default(now())
   updatedAt  DateTime?               @updatedAt
-  type       StatisticTypeDefinition @relation(fields: [typeId], references: [id])
+  deviceId   String
+  id         Int                     @id @default(autoincrement())
   typeId     Int
+  type       StatisticTypeDefinition @relation(fields: [typeId], references: [id])
+  device     Device                  @relation(fields: [deviceId], references: [id])
+}
+
+enum Role {
+  VIEWER
+  USER
+  ADMIN
+}
+
+enum DeviceStatus {
+  OK
+  ERROR
 }

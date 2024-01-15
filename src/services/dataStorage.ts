@@ -1,15 +1,9 @@
 import { PrismaClient, Prisma } from "@prisma/client";
 import { Device } from "elementiot-client/lib/models";
-import { getDevices, getReadings } from "./dataAccess";
-import { extractDataValuesByKey, reduceDataArray } from "./utils";
-import {
-  standardDeviation,
-  mean,
-  zScore,
-  median,
-  interquartileRange,
-  sampleCorrelation,
-} from "simple-statistics";
+import { getDevices, getReadings as getElementReadings } from "./dataAccess";
+import { DeviceData, ReadingData } from "../interfaces/ElementsResponse";
+import { reduceReadingsToUniqueMeasTimestamps } from "./utils";
+const config = require("../../config.json");
 
 const prisma = new PrismaClient();
 
@@ -19,7 +13,7 @@ const prisma = new PrismaClient();
  * @param devices - The devices to be removed.
  * @returns The updated list of devices after removal.
  */
-const removeStoredDevices = async (devices: Device[]) => {
+const removeStoredDevices = async (devices: DeviceData[]) => {
   const deviceIds = devices.map((device) => device.id);
 
   const storedDevices = await prisma.device.findMany({
@@ -34,7 +28,7 @@ const removeStoredDevices = async (devices: Device[]) => {
     return devices;
   }
 
-  const newDevices = devices.reduce((acc: Device[], device) => {
+  const newDevices = devices.reduce((acc: DeviceData[], device) => {
     const storedDevice = storedDevices.find((storedDevice) => storedDevice.id === device.id);
 
     if (!storedDevice) {
@@ -53,7 +47,7 @@ const removeStoredDevices = async (devices: Device[]) => {
  * @param device - The device object to be formatted.
  * @returns The formatted device data.
  */
-const formatDeviceData = (device: Device) => {
+const formatDeviceData = (device: DeviceData) => {
   const deviceData: Prisma.DeviceCreateInput = {
     id: device.id,
     name: device.name,
@@ -65,12 +59,28 @@ const formatDeviceData = (device: Device) => {
   return deviceData;
 };
 
+const formatReadingData = (reading: ReadingData) => {
+  const readingData: Prisma.ReadingUncheckedCreateInput = {
+    battery: reading.data.battery,
+    deviceId: reading.device_id,
+    iso1: reading.data.iso1,
+    iso2: reading.data.iso2,
+    loop1: reading.data.loop1,
+    loop2: reading.data.loop2,
+    measuredAt: reading.measured_at,
+    temp: reading.data.temp || undefined,
+    id: reading.id,
+  };
+
+  return readingData;
+};
+
 /**
  * Stores the given devices in the database.
  * @param devices - The devices to be stored.
  * @returns A promise that resolves to the stored devices.
  */
-const storeDevices = async (devices: Device[]) => {
+const storeDevices = async (devices: DeviceData[]) => {
   const deviceData = devices.map((device) => formatDeviceData(device));
 
   const storedDevices = await prisma.device.createMany({
@@ -86,7 +96,7 @@ const storeDevices = async (devices: Device[]) => {
  * @param devices - An array of devices to be stored.
  * @returns A promise that resolves to the stored devices.
  */
-export const storeNewDevices = async (devices: Device[]) => {
+export const storeNewDevices = async (devices: DeviceData[]) => {
   // Remove devices that are already stored
   const notStoredDevices = await removeStoredDevices(devices);
 
@@ -96,189 +106,217 @@ export const storeNewDevices = async (devices: Device[]) => {
   }
 
   const { count } = await storeDevices(notStoredDevices);
-  console.log(`Stored ${count} devices`);
+  console.log(`${count} new devices stored`);
 
   return notStoredDevices;
 };
 
-// Statistics
-export const createStatisticEntry = async (data: Prisma.StatisticCreateInput) => {
-  return await prisma.statistic.create({
-    data,
-  });
+/**
+ * Updates the stored device with the provided device data.
+ *
+ * @param device The device object to update.
+ * @returns The updated device object.
+ */
+const updateStoredDevice = async (device: DeviceData) => {
+  try {
+    if (!device) {
+      console.info("No Device to update provided");
+      return;
+    }
+
+    const deviceData = formatDeviceData(device);
+
+    const updatedDeviceResponse = await prisma.device.update({
+      where: {
+        id: device.id,
+      },
+      data: deviceData,
+    });
+
+    console.info("Updated Device ", updatedDeviceResponse.name);
+    return updatedDeviceResponse;
+  } catch (err) {
+    console.log(err);
+  }
 };
 
-export const syncLogic = async () => {
-  // Get devices and store new ones
-  const devices = await getDevices();
-  await storeNewDevices(devices);
+/**
+ * Updates the stored devices with the provided devices.
+ *
+ * @param devices - An array of devices to update.
+ * @returns A promise that resolves to an array of updated devices.
+ */
+export const updateStoredDevices = async (devices: DeviceData[]) => {
+  try {
+    if (!devices?.length) {
+      console.info("No Devices to update provided");
+      return;
+    }
 
-  // Get readings for a device
-  // const readings = await getReadings("47d1e925-4ac1-47bb-85ae-eb612ef4e5aa", {
-  //   limit: 10,
-  // });
+    const updatedDevices = await Promise.all(devices.map((device) => updateStoredDevice(device)));
 
-  // const testResponse = [
-  //   {
-  //     parser_id: "a773209a-7685-4580-bae9-7c01e8035276",
-  //     device_id: "47d1e925-4ac1-47bb-85ae-eb612ef4e5aa",
-  //     packet_id: "1a766a1c-0a1b-4d43-b554-7713f520386c",
-  //     location: null,
-  //     inserted_at: "2024-01-12T03:02:29.851787Z",
-  //     measured_at: "2024-01-12T03:02:29.785906Z",
-  //     data: {
-  //       battery: 3.427,
-  //       iso1: 10000,
-  //       iso2: 10000,
-  //       loop1: 4032,
-  //       loop2: 4019,
-  //       meas_timestamp: "2024-01-12T04:00:13Z",
-  //     },
-  //     id: "74bdae10-9f0c-4cb4-b202-b51842884fde",
-  //   },
-  //   {
-  //     parser_id: "a773209a-7685-4580-bae9-7c01e8035276",
-  //     device_id: "47d1e925-4ac1-47bb-85ae-eb612ef4e5aa",
-  //     packet_id: "daf6b407-103b-4339-b553-7f80d957ec5b",
-  //     location: null,
-  //     inserted_at: "2024-01-11T15:02:30.011849Z",
-  //     measured_at: "2024-01-11T15:02:29.938674Z",
-  //     data: {
-  //       battery: 3.414,
-  //       iso1: 10000,
-  //       iso2: 10000,
-  //       loop1: 4027,
-  //       loop2: 4014,
-  //       meas_timestamp: "2024-01-11T04:00:13Z",
-  //     },
-  //     id: "5ea45574-d03a-41bd-8024-6bf7425a1c57",
-  //   },
-  //   {
-  //     parser_id: "a773209a-7685-4580-bae9-7c01e8035276",
-  //     device_id: "47d1e925-4ac1-47bb-85ae-eb612ef4e5aa",
-  //     packet_id: "e2ae79b4-6376-4016-92b8-ae8fbcfabac3",
-  //     location: null,
-  //     inserted_at: "2024-01-10T15:02:25.682307Z",
-  //     measured_at: "2024-01-10T15:02:25.636210Z",
-  //     data: {
-  //       battery: 3.418,
-  //       iso1: 10000,
-  //       iso2: 10000,
-  //       loop1: 4028,
-  //       loop2: 4015,
-  //       meas_timestamp: "2024-01-10T04:00:13Z",
-  //     },
-  //     id: "2f75a632-cbde-4497-ac1d-d80563c252de",
-  //   },
-  //   {
-  //     parser_id: "a773209a-7685-4580-bae9-7c01e8035276",
-  //     device_id: "47d1e925-4ac1-47bb-85ae-eb612ef4e5aa",
-  //     packet_id: "d6450103-cd90-49e2-89b2-8f4d58393c1b",
-  //     location: null,
-  //     inserted_at: "2024-01-10T03:02:21.304781Z",
-  //     measured_at: "2024-01-10T03:02:21.253890Z",
-  //     data: {
-  //       battery: 3.418,
-  //       iso1: 10000,
-  //       iso2: 10000,
-  //       loop1: 4028,
-  //       loop2: 4015,
-  //       meas_timestamp: "2024-01-10T04:00:13Z",
-  //     },
-  //     id: "e7491aed-36ac-4d30-988e-e3dcab8cc817",
-  //   },
-  //   {
-  //     parser_id: "a773209a-7685-4580-bae9-7c01e8035276",
-  //     device_id: "47d1e925-4ac1-47bb-85ae-eb612ef4e5aa",
-  //     packet_id: "5fcbf04c-52c4-498f-8f7c-1cd87e42d155",
-  //     location: null,
-  //     inserted_at: "2024-01-09T15:02:21.435812Z",
-  //     measured_at: "2024-01-09T15:02:21.363140Z",
-  //     data: {
-  //       battery: 3.418,
-  //       iso1: 10000,
-  //       iso2: 10000,
-  //       loop1: 4029,
-  //       loop2: 4015,
-  //       meas_timestamp: "2024-01-09T04:00:13Z",
-  //     },
-  //     id: "5ba85875-be63-4664-80f4-ac1d0974cf17",
-  //   },
-  //   {
-  //     parser_id: "a773209a-7685-4580-bae9-7c01e8035276",
-  //     device_id: "47d1e925-4ac1-47bb-85ae-eb612ef4e5aa",
-  //     packet_id: "5c146322-bd5f-4f37-bfd2-e86fc59dd86c",
-  //     location: null,
-  //     inserted_at: "2024-01-09T03:02:17.144279Z",
-  //     measured_at: "2024-01-09T03:02:17.082984Z",
-  //     data: {
-  //       battery: 3.418,
-  //       iso1: 10000,
-  //       iso2: 10000,
-  //       loop1: 4029,
-  //       loop2: 4015,
-  //       meas_timestamp: "2024-01-09T04:00:13Z",
-  //     },
-  //     id: "56cbd4dd-bf6c-45a1-b4c9-c2fc3fb924b6",
-  //   },
-  //   {
-  //     parser_id: "a773209a-7685-4580-bae9-7c01e8035276",
-  //     device_id: "47d1e925-4ac1-47bb-85ae-eb612ef4e5aa",
-  //     packet_id: "1a65441d-1d9c-4be2-a983-e38379b5c953",
-  //     location: null,
-  //     inserted_at: "2024-01-08T15:02:17.092274Z",
-  //     measured_at: "2024-01-08T15:02:17.047382Z",
-  //     data: {
-  //       battery: 3.427,
-  //       iso1: 10000,
-  //       iso2: 10000,
-  //       loop1: 4033,
-  //       loop2: 4020,
-  //       meas_timestamp: "2024-01-08T04:00:13Z",
-  //     },
-  //     id: "6b66a61d-016b-4433-81dd-e127826575f9",
-  //   },
-  //   {
-  //     parser_id: "a773209a-7685-4580-bae9-7c01e8035276",
-  //     device_id: "47d1e925-4ac1-47bb-85ae-eb612ef4e5aa",
-  //     packet_id: "7112884c-b149-484e-918b-9985dac7a1de",
-  //     location: null,
-  //     inserted_at: "2024-01-08T03:02:19.085912Z",
-  //     measured_at: "2024-01-08T03:02:12.850612Z",
-  //     data: {
-  //       battery: 3.427,
-  //       iso1: 10000,
-  //       iso2: 10000,
-  //       loop1: 4033,
-  //       loop2: 4020,
-  //       meas_timestamp: "2024-01-08T04:00:13Z",
-  //     },
-  //     id: "2c082d84-e2c1-4228-adc7-b8a6baff466b",
-  //   },
-  // ];
+    console.info("Updated Devices ", updatedDevices.length);
 
-  // const responseData = testResponse.map((entry) => entry.data);
+    return updatedDevices;
+  } catch (err) {
+    console.log(err);
+  }
+};
 
-  // const keeped = extractDataValuesByKey(responseData, ["iso1", "iso2", "loop1", "loop2", "contact2"]);
+/**
+ * Handles the devices.
+ *
+ * @param devices - The devices to be handled.
+ */
+export const createAndUpdateDevices = async (devices: DeviceData[]) => {
+  try {
+    if (!devices?.length) {
+      console.info("No Devices to handle provided");
+      return;
+    }
 
-  // const calcStatisticalValues = (data1: number[], data2?: number[]) => {
-  //   const medianValue = median(data1);
-  //   const meanValue = mean(data1);
-  //   const stdDev = standardDeviation(data1);
-  //   // const zScoreValue = zScore(data1[0], medianValue, stdDev);
-  //   const interquartileRangeValue = interquartileRange(data1);
-  //   const sampleCorrelationValue = data2 ? sampleCorrelation(data1, data2) : null;
+    const currentStoredDevices = await prisma.device.findMany();
 
-  //   return {
-  //     median: medianValue,
-  //     mean: +meanValue.toFixed(2),
-  //     stdDev: +stdDev.toFixed(2),
-  //     interquartileRange: interquartileRangeValue,
-  //     sampleCorrelation: sampleCorrelationValue ? +sampleCorrelationValue.toFixed(2) : null,
-  //     // zScore: zScoreValue,
-  //     // value: data[0],
-  //   };
-  // };
+    // Sort devices into already stored and not stored devices
+    const { alreadyStoredDevices, notStoredDevices } = devices.reduce(
+      (acc: { alreadyStoredDevices: DeviceData[]; notStoredDevices: DeviceData[] }, device) => {
+        const storedDevice = currentStoredDevices.find((storedDevice) => storedDevice.id === device.id);
 
-  // console.log(calcStatisticalValues(keeped.loop1, keeped.loop2));
+        if (storedDevice) {
+          if (new Date(device?.updated_at) > new Date(storedDevice?.updatedAt)) {
+            acc.alreadyStoredDevices.push(device);
+            return acc;
+          }
+        } else {
+          acc.notStoredDevices.push(device);
+        }
+
+        return acc;
+      },
+      { alreadyStoredDevices: [], notStoredDevices: [] }
+    );
+
+    // Store devices that are not stored
+    notStoredDevices.length && (await storeDevices(notStoredDevices));
+
+    // Update devices that are already stored
+    alreadyStoredDevices.length && (await updateStoredDevices(alreadyStoredDevices));
+
+    return { updatedDevices: alreadyStoredDevices.length, newDevices: notStoredDevices.length };
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+export const storeReading = async (data: ReadingData) => {
+  try {
+    const formattedReading = formatReadingData(data);
+
+    const { battery, deviceId, iso1, iso2, loop1, loop2, measuredAt, temp, id } = formattedReading;
+
+    const storedReading = await prisma.reading.create({
+      data: {
+        battery,
+        device: {
+          connect: {
+            id: deviceId,
+          },
+        },
+        iso1,
+        iso2,
+        loop1,
+        loop2,
+        measuredAt,
+        temp,
+        id,
+      },
+    });
+
+    return storedReading;
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+export const storeReadings = async (readings: ReadingData[]) => {
+  try {
+    // Remove readings with duplicate measuredAt timestamps
+    const uniqueReadings = reduceReadingsToUniqueMeasTimestamps(readings);
+
+    const result = await Promise.all(uniqueReadings.map((reading) => storeReading(reading)));
+    return result;
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+export const initiateDeviceReadings = async (deviceId: Prisma.ReadingUncheckedCreateInput["deviceId"]) => {
+  try {
+    const initialReadings = config.options.maxInitialReadings || 0;
+
+    if (!deviceId || deviceId.length < 5) {
+      console.log("No deviceId provided");
+      return;
+    }
+
+    const currentReadingsLength = await prisma.reading.count({
+      where: {
+        deviceId,
+      },
+    });
+
+    if (currentReadingsLength >= initialReadings) {
+      return;
+    }
+
+    // If no readings are stored for the device, get initial readings
+    if (currentReadingsLength === 0) {
+      // Get Readings for device
+      const elementReadings = await getElementReadings(deviceId, {
+        limit: initialReadings,
+        sort: "inserted_at",
+        sortDirection: "desc",
+        filter: "data.iso1!=null&&data.iso2!=null&&data.loop1!=null&&data.loop2!=null",
+      });
+
+      // Store readings in database
+
+      const storedReadings = await storeReadings(elementReadings);
+
+      console.log("Stored readings: ", storedReadings?.length);
+
+      return storedReadings;
+    }
+
+    // Get Readings AFTER the OLDEST stored reading
+
+    const newestStoredReading = await prisma.reading.findFirst({
+      where: {
+        deviceId,
+      },
+      orderBy: {
+        measuredAt: "asc",
+      },
+    });
+
+    const elementReadings = await getElementReadings(deviceId, {
+      limit: initialReadings - currentReadingsLength,
+      sort: "inserted_at",
+      sortDirection: "desc",
+      retrieveAfterId: newestStoredReading?.id,
+      filter: `data.iso1!=null&&data.iso2!=null&&data.loop1!=null&&data.loop2!=null`,
+    });
+
+    if (!elementReadings?.length) {
+      console.log(`No more readings to store for device ${newestStoredReading?.deviceId}`);
+      return;
+    }
+
+    const storedReadings = await storeReadings(elementReadings);
+
+    console.log("Stored readings: ", storedReadings?.length);
+    return storedReadings;
+  } catch (err) {
+    console.log(err);
+  }
 };

@@ -1,9 +1,5 @@
 import app from "./app";
-
-import { syncLogic } from "./services/dataStorage";
-// import { main } from "./services/dataAccess";
-
-syncLogic();
+import cronJobs from "./cronJobs";
 
 const port = process.env.PORT || 3333;
 app.listen(port, () => {
@@ -11,3 +7,5 @@ app.listen(port, () => {
   console.log(`Listening: http://localhost:${port}`);
   /* eslint-enable no-console */
 });
+
+cronJobs();

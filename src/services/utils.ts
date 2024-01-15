@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import { Prisma } from "@prisma/client";
 import { Request } from "express";
-import { Data } from "../interfaces/ElementsResponse";
+import { Data, ReadingData } from "../interfaces/ElementsResponse";
 
 const calculateExpiration = (expiresIn: string | number): number | null => {
   if (typeof expiresIn === "string") {
@@ -119,7 +119,7 @@ export function reduceDataArray(data: any[], keysToKeep: string[]) {
   });
 }
 
-type ExtractDataValuesByKey = {
+export type ExtractDataValuesByKey = {
   [key in keyof Data]: Data[key][];
 };
 /**
@@ -142,4 +142,19 @@ export function extractDataValuesByKey(dataArray: Data[], keysToExtract: (keyof 
   }
 
   return extractedValues;
+}
+
+// Remove readings with same data.meas_timestamp values
+export function reduceReadingsToUniqueMeasTimestamps(readings: ReadingData[]) {
+  const uniqueReadings = readings.reduce((acc: ReadingData[], reading) => {
+    const existingReading = acc.find((r) => r.data.meas_timestamp === reading.data.meas_timestamp);
+
+    if (!existingReading) {
+      acc.push(reading);
+    }
+
+    return acc;
+  }, []);
+
+  return uniqueReadings;
 }

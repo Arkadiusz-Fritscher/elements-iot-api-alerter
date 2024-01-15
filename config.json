@@ -1,0 +1,13 @@
+{
+  "options": {
+    "maxInitialReadings": 1,
+    "initiateReadings": true,
+    "initiateDevices": true,
+    "initiateReadingsIntervalMinutes": 480,
+    "initiateDevicesIntervalMinutes": 120
+  },
+  "settings": {
+    "lastReadingsInitiation": "2024-01-14T20:41:33.010Z",
+    "lastDevicesInitiation": "2024-01-14T20:08:51.778Z"
+  }
+}

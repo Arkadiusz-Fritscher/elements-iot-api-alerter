@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 router.get("/", async (req: Request, res: Response) => {
   const devices = await prisma.device.findMany({
     include: {
-      statistic: {
+      statistics: {
         select: {
           sampleSize: true,
           value: true,

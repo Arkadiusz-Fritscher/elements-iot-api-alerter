@@ -1,6 +1,6 @@
 import { ElementKit } from "elementiot-client";
-import { Device, Options, Reading } from "elementiot-client/lib/models";
-import { ReadingData } from "../interfaces/ElementsResponse";
+import { Device, Options, Reading, ElementResponse } from "elementiot-client/lib/models";
+import { ReadingData, DeviceData } from "../interfaces/ElementsResponse";
 
 const elements = new ElementKit({ apiKey: process.env.ELEMENTS_API_KEY! });
 
@@ -13,7 +13,7 @@ const elements = new ElementKit({ apiKey: process.env.ELEMENTS_API_KEY! });
 export const getDevices = async (inactive: boolean = false, options: Options = {}) => {
   const tag = inactive ? process.env.ELEMENTS_INACTIVE_FOLDER_ID! : process.env.ELEMENTS_ACTIVE_FOLDER_ID!;
 
-  const devices = await elements.getDevicesByTagId(tag, options);
+  const devices = (await elements.getDevicesByTagId(tag, options)) as DeviceData[];
   return devices;
 };
 
@@ -28,7 +28,7 @@ export const getDevice = async (id: string) => {
     throw new Error("Device ID is required");
   }
 
-  const device = await elements.getDevice(id);
+  const device = (await elements.getDevice(id)) as ElementResponse<DeviceData>;
   return device;
 };
 
