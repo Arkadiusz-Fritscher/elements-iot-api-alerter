@@ -119,31 +119,6 @@ export function reduceDataArray(data: any[], keysToKeep: string[]) {
   });
 }
 
-export type ExtractDataValuesByKey = {
-  [key in keyof Data]: Data[key][];
-};
-/**
- * Extracts data values from an array of objects based on the specified keys.
- *
- * @param dataArray The array of objects from which to extract data values.
- * @param keysToExtract The keys of the data values to extract.
- * @returns An object containing the extracted data values.
- */
-export function extractDataValuesByKey(dataArray: Data[], keysToExtract: (keyof Data)[]) {
-  const extractedValues = {} as ExtractDataValuesByKey;
-
-  for (const key of keysToExtract) {
-    // Check if the key exists in the data array
-    if (!dataArray.some((obj) => obj.hasOwnProperty(key))) {
-      continue;
-    }
-    // @ts-ignore
-    extractedValues[key] = dataArray.map((obj) => obj[key]);
-  }
-
-  return extractedValues;
-}
-
 // Remove readings with same data.meas_timestamp values
 export function reduceReadingsToUniqueMeasTimestamps(readings: ReadingData[]) {
   const uniqueReadings = readings.reduce((acc: ReadingData[], reading) => {

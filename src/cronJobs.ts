@@ -1,8 +1,7 @@
 "use strict";
 import logger from "./services/useLogger";
-import { getStatisticalValues } from "./services/dataAnalyze";
 import { PrismaClient } from "@prisma/client";
-import { getDevices as getElementsDevices, getReadings } from "./services/dataAccess";
+import { getDevicesElements, getReadingsElements } from "./services/dataAccess";
 import { initiateDeviceReadings, createAndUpdateDevices } from "./services/dataStorage";
 import fs from "fs";
 const config = require("../config.json");
@@ -45,7 +44,7 @@ const handleDevicesAndReadings = async (force: boolean = false) => {
   }
 
   // Get Active devices from Elements
-  const elementsDevices = await getElementsDevices();
+  const elementsDevices = await getDevicesElements();
 
   if (!elementsDevices.length) {
     logger.warn("Initiation failed. No devices found");
@@ -85,7 +84,7 @@ const handleDevicesAndReadings = async (force: boolean = false) => {
     );
   } else {
     logger.info("Device initiation skipped");
-    logger.info("Last initiation: ", new Date(lastDevicesInitiation).toISOString());
+    logger.info("- Last initiation: ", new Date(lastDevicesInitiation).toISOString());
     logger.info(
       "- Next initiation: ",
       new Date(

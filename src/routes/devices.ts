@@ -10,14 +10,12 @@ router.get("/", async (req: Request, res: Response) => {
     include: {
       statistics: {
         select: {
-          sampleSize: true,
           value: true,
-          updatedAt: true,
+          name: true,
+          unit: true,
           type: {
             select: {
               name: true,
-              unit: true,
-              description: true,
             },
           },
         },

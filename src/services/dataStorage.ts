@@ -1,6 +1,6 @@
 import { PrismaClient, Prisma } from "@prisma/client";
 import { Device } from "elementiot-client/lib/models";
-import { getDevices, getReadings as getElementReadings } from "./dataAccess";
+import { getDevicesElements, getReadingsElements } from "./dataAccess";
 import { DeviceData, ReadingData } from "../interfaces/ElementsResponse";
 import { reduceReadingsToUniqueMeasTimestamps } from "./utils";
 import logger from "./useLogger";
@@ -267,14 +267,13 @@ export const initiateDeviceReadings = async (deviceId: Prisma.ReadingUncheckedCr
     });
 
     if (currentReadingsLength >= initialReadings) {
-      logger.info(`Device ${deviceId} already has ${currentReadingsLength} readings`);
       return;
     }
 
     // If no readings are stored for the device, get initial readings
     if (initialReadings && currentReadingsLength === 0) {
       // Get Readings for device
-      const elementReadings = await getElementReadings(deviceId, {
+      const elementReadings = await getReadingsElements(deviceId, {
         limit: +initialReadings * 1.3,
         sort: "inserted_at",
         sortDirection: "desc",
@@ -308,7 +307,7 @@ export const initiateDeviceReadings = async (deviceId: Prisma.ReadingUncheckedCr
         },
       });
 
-      const elementReadings = await getElementReadings(deviceId, {
+      const elementReadings = await getReadingsElements(deviceId, {
         limit: initialReadings - currentReadingsLength,
         sort: "inserted_at",
         sortDirection: "desc",

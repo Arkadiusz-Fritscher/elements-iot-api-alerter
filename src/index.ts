@@ -1,5 +1,6 @@
 import app from "./app";
 import cronJobs from "./cronJobs";
+import main from "./services/dataAnalyze";
 
 const port = process.env.PORT || 3333;
 app.listen(port, () => {
@@ -9,3 +10,4 @@ app.listen(port, () => {
 });
 
 cronJobs();
+main();
