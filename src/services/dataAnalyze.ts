@@ -2,7 +2,7 @@
 import logger from "./useLogger";
 import { Data, ReadingData } from "../interfaces/ElementsResponse";
 import { getReadings } from "./dataAccess";
-import { Prisma, PrismaClient, Reading, StatisticValueName } from "@prisma/client";
+import { Prisma, PrismaClient, Reading } from "@prisma/client";
 import {
   standardDeviation,
   mean,
@@ -46,109 +46,92 @@ export function extractDataValuesByKey(
   return extractedValues;
 }
 
-const calculateStatisticalValues = (functionName: string, dataset: number[]) => {
-  switch (functionName) {
-    case "mean":
-      return mean(dataset);
-    case "median":
-      return median(dataset);
-    case "std":
-      return standardDeviation(dataset);
-    case "mad":
-      return medianAbsoluteDeviation(dataset);
-    case "iqr":
-      return interquartileRange(dataset);
-    default:
-      return null;
+const calculateStatisticalValues = (type: string, dataset: number[], deviceId: string) => {
+  const result: { type: string; value: number; sampleSize: number; deviceId: string }[] = [];
+
+  if (!dataset.length) {
+    return result;
   }
-};
-
-const createDeviceStatistics = async (readings: Reading[]) => {
-  logger.info("Starting to create device statistics");
-  const datasets = extractDataValuesByKey(readings);
-  const statisticTypes = await prisma.statisticType.findMany();
-
-  if (!statisticTypes || !statisticTypes.length) {
-    logger.warn("No statistical types found");
-    return;
-  }
-
-  const statistics: any[] = [];
-
-  statisticTypes.forEach((statisticType) => {
-    Object.keys(datasets).forEach((key) => {
-      const dataset = datasets[key];
-      const value = calculateStatisticalValues(statisticType.name, dataset);
-
-      const statisticValue = {} as Prisma.StatisticValueUncheckedCreateInput;
-
-      if (!value) {
-        return;
-      }
-
-      statisticValue.value = value;
-      statisticValue.typeId = statisticType.id;
-      statisticValue.deviceId = readings[0].deviceId;
-      statisticValue.name = key as StatisticValueName;
-
-      if (key.includes("iso")) {
-        statisticValue.unit = "kOhm";
-      } else if (key.includes("loop")) {
-        statisticValue.unit = "Ohm";
-      } else {
-        statisticValue.unit = "";
-      }
-
-      statistics.push(statisticValue);
-
-      return statisticValue;
-    });
+  result.push({ type: `${type}_mean`, value: mean(dataset), sampleSize: dataset.length, deviceId });
+  result.push({ type: `${type}_median`, value: median(dataset), sampleSize: dataset.length, deviceId });
+  result.push({
+    type: `${type}_standardDeviation`,
+    value: standardDeviation(dataset),
+    sampleSize: dataset.length,
+    deviceId,
+  });
+  result.push({
+    type: `${type}_medianAbsoluteDeviation`,
+    value: medianAbsoluteDeviation(dataset),
+    sampleSize: dataset.length,
+    deviceId,
+  });
+  result.push({
+    type: `${type}_interquartileRange`,
+    value: interquartileRange(dataset),
+    sampleSize: dataset.length,
+    deviceId,
   });
 
-  // const statisticResults = Object.keys(datasets).forEach((key) => {
-  //   console.log(key, datasets[key]);
-
-  //   if (!result.hasOwnProperty(key)) {
-  //     result[key] = {};
-  //   }
-  // });
-
-  const results = await Promise.all(
-    statistics.map((statistic) => prisma.statisticValue.create({ data: statistic }))
-  );
-
-  console.log(results);
-};
-
-const initiateDeviceStatistics = async (
-  deviceId: Prisma.DeviceUncheckedCreateInput["id"],
-  limit: number = 100
-) => {
-  try {
-    if (!deviceId || deviceId.length < 5) {
-      logger.warn("No deviceId provided");
-      return;
-    }
-
-    const readings = await getReadings(deviceId, limit);
-
-    if (!readings || !readings?.length) {
-      logger.warn("No readings found");
-      return;
-    }
-
-    createDeviceStatistics(readings);
-  } catch (error) {
-    logger.error(error);
-  }
+  return result;
 };
 
 export async function main() {
-  // const devices = await prisma.device.findMany();
-  // if (!devices || !devices.length) {
-  //   logger.warn("No devices found");
-  //   return;
-  // }
+  const devices = await prisma.device.findMany({
+    select: {
+      id: true,
+      readings: {
+        select: {
+          iso1: true,
+          loop1: true,
+          iso2: true,
+          loop2: true,
+        },
+      },
+      statistics: {},
+    },
+  });
+  if (!devices || !devices.length) {
+    logger.warn("No devices found");
+    return;
+  }
+
+  const result: any = [];
+
+  devices.forEach((device) => {
+    const readings = extractDataValuesByKey(device.readings as Reading[]);
+
+    Object.entries(readings).forEach(([key, dataset]) => {
+      const statisticalValues = calculateStatisticalValues(key, dataset, device.id);
+
+      result.push(...statisticalValues);
+    });
+  });
+
+  // console.log(result);
+
+  const createdStatistics = await Promise.all(
+    result.map((entry: { type: string; value: number; sampleSize: number; deviceId: string }) => {
+      return prisma.statistics.upsert({
+        where: {
+          slug: `${entry.type}_${entry.deviceId}`,
+        },
+        create: {
+          ...entry,
+          slug: `${entry.type}_${entry.deviceId}`,
+        },
+        update: {
+          value: entry.value,
+          sampleSize: entry.sampleSize,
+        },
+      });
+    })
+  );
+
+  console.log(createdStatistics);
+
+  return;
+
   // await Promise.all(devices.map((device) => initiateDeviceStatistics(device.id)));
   // initiateDeviceStatistics("47d1e925-4ac1-47bb-85ae-eb612ef4e5aa");
 }

@@ -266,7 +266,7 @@ export const initiateDeviceReadings = async (deviceId: Prisma.ReadingUncheckedCr
       },
     });
 
-    if (currentReadingsLength >= initialReadings) {
+    if (currentReadingsLength >= initialReadings || currentReadingsLength >= +initialReadings * 0.9) {
       return;
     }
 
@@ -274,7 +274,6 @@ export const initiateDeviceReadings = async (deviceId: Prisma.ReadingUncheckedCr
     if (initialReadings && currentReadingsLength === 0) {
       // Get Readings for device
       const elementReadings = await getReadingsElements(deviceId, {
-        limit: +initialReadings * 1.3,
         sort: "inserted_at",
         sortDirection: "desc",
         filter: "data.iso1!=null&&data.iso2!=null&&data.loop1!=null&&data.loop2!=null",
@@ -284,46 +283,46 @@ export const initiateDeviceReadings = async (deviceId: Prisma.ReadingUncheckedCr
 
       const storedReadings = await storeReadings(elementReadings);
 
-      logger.info(`Initial readings stored: ${storedReadings?.length}`);
+      logger.info(`Initial readings stored: ${storedReadings?.length} from ${elementReadings?.length}`);
 
       return storedReadings;
     }
 
-    if (initialReadings && currentReadingsLength > 0 && currentReadingsLength < initialReadings) {
-      // Get Readings AFTER the OLDEST stored reading
+    // if (initialReadings && currentReadingsLength > 0 && currentReadingsLength < initialReadings) {
+    //   // Get Readings AFTER the OLDEST stored reading
 
-      logger.info(
-        `Device ${deviceId} has ${currentReadingsLength} readings. Getting ${
-          initialReadings - currentReadingsLength
-        } more}`
-      );
+    //   logger.info(
+    //     `Device ${deviceId} has ${currentReadingsLength} readings. Getting ${
+    //       initialReadings - currentReadingsLength
+    //     } more}`
+    //   );
 
-      const newestStoredReading = await prisma.reading.findFirst({
-        where: {
-          deviceId,
-        },
-        orderBy: {
-          measuredAt: "asc",
-        },
-      });
+    //   const newestStoredReading = await prisma.reading.findFirst({
+    //     where: {
+    //       deviceId,
+    //     },
+    //     orderBy: {
+    //       measuredAt: "asc",
+    //     },
+    //   });
 
-      const elementReadings = await getReadingsElements(deviceId, {
-        limit: initialReadings - currentReadingsLength,
-        sort: "inserted_at",
-        sortDirection: "desc",
-        retrieveAfterId: newestStoredReading?.id,
-        filter: `data.iso1!=null&&data.iso2!=null&&data.loop1!=null&&data.loop2!=null`,
-      });
+    //   const elementReadings = await getReadingsElements(deviceId, {
+    //     limit: initialReadings - currentReadingsLength,
+    //     sort: "inserted_at",
+    //     sortDirection: "desc",
+    //     retrieveAfterId: newestStoredReading?.id,
+    //     filter: `data.iso1!=null&&data.iso2!=null&&data.loop1!=null&&data.loop2!=null`,
+    //   });
 
-      if (!elementReadings?.length) {
-        logger.info(`No more readings to store for device ${newestStoredReading?.deviceId}`);
-        return;
-      }
+    //   if (!elementReadings?.length) {
+    //     logger.info(`No more readings to store for device ${newestStoredReading?.deviceId}`);
+    //     return;
+    //   }
 
-      const storedReadings = await storeReadings(elementReadings);
-      logger.info(`Initial readings stored: ${storedReadings?.length}`);
-      return storedReadings;
-    }
+    //   const storedReadings = await storeReadings(elementReadings);
+    //   logger.info(`Initial readings stored: ${storedReadings?.length}`);
+    //   return storedReadings;
+    // }
 
     return;
   } catch (err) {

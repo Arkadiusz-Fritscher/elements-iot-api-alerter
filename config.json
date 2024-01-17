@@ -1,14 +1,14 @@
 {
   "options": {
-    "maxInitialReadings": 20,
-    "initiateReadings": false,
-    "initiateDevices": false,
+    "maxInitialReadings": 200,
+    "initiateReadings": true,
+    "initiateDevices": true,
     "initiateReadingsIntervalMinutes": 240,
     "initiateDevicesIntervalMinutes": 120,
     "zScoreThreshold": 2
   },
   "settings": {
-    "lastReadingsInitiation": "2024-01-15T18:35:13.480Z",
-    "lastDevicesInitiation": "2024-01-15T18:52:03.215Z"
+    "lastReadingsInitiation": "2024-01-17T14:21:32.529Z",
+    "lastDevicesInitiation": "2024-01-17T13:54:41.923Z"
   }
 }

@@ -21,53 +21,15 @@ model User {
 }
 
 model Device {
-  id         String           @id @default(uuid())
-  slug       String           @unique
+  id         String       @id @default(uuid())
+  slug       String       @unique
   name       String
-  createdAt  DateTime         @default(now())
-  updatedAt  DateTime         @updatedAt
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
   lastSeen   DateTime?
-  status     DeviceStatus     @default(OK)
+  status     DeviceStatus @default(OK)
+  statistics Statistics[]
   readings   Reading[]
-  statistics StatisticValue[]
-}
-
-model StatisticType {
-  id           Int              @id @default(autoincrement())
-  name         String           @unique
-  functionName String           @unique
-  values       StatisticValue[]
-}
-
-model StatisticValue {
-  id        Int                @id @default(autoincrement())
-  name      StatisticValueName
-  value     Int
-  unit      String
-  type      StatisticType      @relation(fields: [typeId], references: [id])
-  typeId    Int
-  device    Device             @relation(fields: [deviceId], references: [id])
-  deviceId  String
-  createdAt DateTime           @default(now())
-  updatedAt DateTime           @updatedAt
-}
-
-enum Role {
-  VIEWER
-  USER
-  ADMIN
-}
-
-enum DeviceStatus {
-  OK
-  ERROR
-}
-
-enum StatisticValueName {
-  iso1
-  iso2
-  loop1
-  loop2
 }
 
 model Reading {
@@ -81,4 +43,26 @@ model Reading {
   loop2      Float
   temp       Int?
   device     Device   @relation(fields: [deviceId], references: [id])
+}
+
+model Statistics {
+  slug       String   @unique @default(uuid())
+  type       String
+  value      Float
+  sampleSize Int
+  deviceId   String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  devide     Device   @relation(fields: [deviceId], references: [id])
+}
+
+enum Role {
+  VIEWER
+  USER
+  ADMIN
+}
+
+enum DeviceStatus {
+  OK
+  ERROR
 }

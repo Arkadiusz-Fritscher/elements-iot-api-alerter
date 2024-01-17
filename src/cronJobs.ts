@@ -137,8 +137,7 @@ const handleDevicesAndReadings = async (force: boolean = false) => {
   return Promise.resolve("Initiation finished!");
 };
 
-const cronJobs = async () => {
-  const force = false;
+const cronJobs = async (force: boolean = false) => {
   logger.info("Cron job started!");
   await handleDevicesAndReadings(force);
 };
