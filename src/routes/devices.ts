@@ -1,12 +1,11 @@
-import express, { Request, Response, NextFunction, response } from "express";
-import { PrismaClient, Prisma } from "@prisma/client";
-import { validationResult, param } from "express-validator";
-import { json } from "stream/consumers";
+import express, { Request, Response, NextFunction } from 'express';
+import { PrismaClient, Prisma } from '@prisma/client';
+import { validationResult, param } from 'express-validator';
 
 const router = express.Router();
 const prisma = new PrismaClient();
 
-router.get("/", async (req: Request, res: Response) => {
+router.get('/', async (req: Request, res: Response) => {
   const devices = await prisma.device.findMany({
     include: {
       statistics: true,
@@ -16,8 +15,8 @@ router.get("/", async (req: Request, res: Response) => {
 });
 
 router.get(
-  "/:id",
-  [param("id", "Ungültige Geräte-ID").isUUID().escape()],
+  '/:id',
+  [param('id', 'Ungültige Geräte-ID').isUUID().escape()],
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const errors = validationResult(req);
@@ -39,10 +38,10 @@ router.get(
     } catch (error) {
       return next(error);
     }
-  }
+  },
 );
 
-router.patch("/:id", async (req: Request, res: Response, next: NextFunction) => {
+router.patch('/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const body = req.body;
@@ -58,12 +57,12 @@ router.patch("/:id", async (req: Request, res: Response, next: NextFunction) => 
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       return res.status(500).json({
-        message: "Ein Fehler ist aufgetreten",
+        message: 'Ein Fehler ist aufgetreten',
       });
     }
     // return next(new Error(error));
     return res.status(500).json({
-      message: "something went wrong",
+      message: 'something went wrong',
     });
   }
 });

@@ -1,8 +1,8 @@
-"use strict";
-import useElement from "./elementModule";
-import { ReadingData, DeviceData } from "../interfaces/ElementsResponse";
-import logger from "./loggerModule";
-import { Prisma, PrismaClient, Device, DeviceStatus } from "@prisma/client";
+'use strict';
+import useElement from './elementModule';
+import { DeviceData } from '../interfaces/ElementsResponse';
+import logger from './loggerModule';
+import { PrismaClient, Device, DeviceStatus } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -110,7 +110,7 @@ const compareDevices = async () => {
 
 export const handleDevices = () => {
   setInterval(() => {
-    logger.info("Comparing devices");
+    logger.info('Comparing devices');
     compareDevices();
   }, 1000 * 60 * 60 * 3);
   // compareDevices();

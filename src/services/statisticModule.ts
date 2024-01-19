@@ -1,11 +1,11 @@
-"use strict";
-import logger from "./loggerModule";
-import { Device, Prisma, PrismaClient, Reading, DeviceStatus } from "@prisma/client";
-import { statisticUtils } from "./utils";
+'use strict';
+import logger from './loggerModule';
+import { Device, PrismaClient, DeviceStatus } from '@prisma/client';
+import { statisticUtils } from './utils';
 
 const prisma = new PrismaClient();
 
-export const updateDeviceStatistics = async (id: Device["id"]) => {
+export const updateDeviceStatistics = async (id: Device['id']) => {
   try {
     logger.info(`Generating statistics for device ${id}`);
     const storedReadings = await prisma.reading.findMany({

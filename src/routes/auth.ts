@@ -1,13 +1,13 @@
-import express, { Request, Response, NextFunction } from "express";
-import { validationResult } from "express-validator";
-import { validateAuth } from "../middlewares/validationMiddlewares";
-import { PrismaClient } from "@prisma/client";
-import { generateTokenObject } from "../../backups/utils";
-import bcrypt from "bcrypt";
+import express, { Request, Response, NextFunction } from 'express';
+import { validationResult } from 'express-validator';
+import { validateAuth } from '../middlewares/validationMiddlewares';
+import { PrismaClient } from '@prisma/client';
+import { generateTokenObject } from '../../backups/utils';
+import bcrypt from 'bcrypt';
 
 const router = express.Router();
 
-router.post("/", validateAuth, async (req: Request, res: Response, next: NextFunction) => {
+router.post('/', validateAuth, async (req: Request, res: Response, next: NextFunction) => {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
@@ -28,7 +28,7 @@ router.post("/", validateAuth, async (req: Request, res: Response, next: NextFun
 
   if (!user) {
     res.status(401);
-    return next(new Error("Nutzer nicht gefunden"));
+    return next(new Error('Nutzer nicht gefunden'));
   }
 
   // Compare passwords
@@ -36,7 +36,7 @@ router.post("/", validateAuth, async (req: Request, res: Response, next: NextFun
 
   if (!passwordMatch) {
     res.status(401);
-    return next(new Error("Ungültige Anmeldeinformationen"));
+    return next(new Error('Ungültige Anmeldeinformationen'));
   }
 
   // Generate token

@@ -1,14 +1,13 @@
-"use strict";
+'use strict';
 
 import {
   standardDeviation,
   mean,
-  zScore,
   median,
   interquartileRange,
   medianAbsoluteDeviation,
   quantile,
-} from "simple-statistics";
+} from 'simple-statistics';
 
 export const removeOutliersFromReadings = (dataset: number[], factor: number = 1.5) => {
   const q1 = quantile(dataset, 0.25);

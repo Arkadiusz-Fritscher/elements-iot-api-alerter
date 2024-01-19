@@ -1,13 +1,12 @@
-import express, { Request, Response, NextFunction } from "express";
-import { PrismaClient, Prisma } from "@prisma/client";
-import { validationResult, param } from "express-validator";
-import { validateGetReadings } from "../middlewares/validationMiddlewares";
-import { ReadingData } from "../interfaces/ElementsResponse";
+import express, { Request, Response, NextFunction } from 'express';
+import { PrismaClient } from '@prisma/client';
+import { validationResult } from 'express-validator';
+import { validateGetReadings } from '../middlewares/validationMiddlewares';
 
 const router = express.Router();
 const prisma = new PrismaClient();
 
-router.get("/:id", validateGetReadings, async (req: Request, res: Response, next: NextFunction) => {
+router.get('/:id', validateGetReadings, async (req: Request, res: Response, next: NextFunction) => {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
@@ -24,7 +23,7 @@ router.get("/:id", validateGetReadings, async (req: Request, res: Response, next
     },
     take: limit ? (Number(limit) > 100 ? 100 : Number(limit)) : 30,
     orderBy: {
-      measuredAt: "desc",
+      measuredAt: 'desc',
     },
     include: {
       device: {

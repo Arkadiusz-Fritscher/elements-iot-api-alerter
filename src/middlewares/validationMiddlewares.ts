@@ -1,19 +1,19 @@
-import { body, param } from "express-validator";
-import { PrismaClient } from "@prisma/client";
+import { body, param } from 'express-validator';
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 //  /signup
 export const validateSignup = [
-  body("email").isEmail().normalizeEmail().withMessage("Ungültige E-Mail-Adresse"),
-  body("username").trim().isLength({ min: 4 }).withMessage("Nutzername muss mindestens 4 Zeichen lang sein"),
-  body("password").isLength({ min: 6 }).withMessage("Passwort muss mindestend 6 Zeichen lang sein").escape(),
+  body('email').isEmail().normalizeEmail().withMessage('Ungültige E-Mail-Adresse'),
+  body('username').trim().isLength({ min: 4 }).withMessage('Nutzername muss mindestens 4 Zeichen lang sein'),
+  body('password').isLength({ min: 6 }).withMessage('Passwort muss mindestend 6 Zeichen lang sein').escape(),
 ];
 
 //  /auth
 export const validateAuth = [
-  body("username").trim().isLength({ min: 4 }),
-  body("password").isLength({ min: 6 }).escape(),
+  body('username').trim().isLength({ min: 4 }),
+  body('password').isLength({ min: 6 }).escape(),
 ];
 
 // POST /statistics
@@ -102,16 +102,16 @@ export const validateAuth = [
 
 // // GET /readings/:id
 export const validateGetReadings = [
-  param("id")
+  param('id')
     .exists()
-    .withMessage("ID muss angegeben werden")
+    .withMessage('ID muss angegeben werden')
     .trim()
     .isUUID()
-    .withMessage("Ungültige ID")
+    .withMessage('Ungültige ID')
     .custom((value) => {
       return prisma.device.findUnique({ where: { id: value } }).then((device) => {
         if (!device) {
-          return Promise.reject("Es existiert kein Gerät mit dieser ID");
+          return Promise.reject('Es existiert kein Gerät mit dieser ID');
         }
       });
     })
