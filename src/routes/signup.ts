@@ -1,14 +1,14 @@
-import express, { Request, Response, NextFunction } from 'express';
-import { validationResult } from 'express-validator';
-import { PrismaClient, Prisma } from '@prisma/client';
-import { validateSignup } from '../middlewares/validationMiddlewares';
-import { generateTokenObject } from '../../backups/utils';
-import bcrypt from 'bcrypt';
+import express, { Request, Response, NextFunction } from "express";
+import { validationResult } from "express-validator";
+import { PrismaClient, Prisma } from "@prisma/client";
+import { validateSignup } from "../middlewares/validationMiddlewares";
+import { generateTokenObject } from "../services/utils/apiUtils";
+import bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();
 const router = express.Router();
 
-router.post('/', validateSignup, async (req: Request, res: Response, next: NextFunction) => {
+router.post("/", validateSignup, async (req: Request, res: Response, next: NextFunction) => {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
@@ -38,12 +38,12 @@ router.post('/', validateSignup, async (req: Request, res: Response, next: NextF
       token,
     });
   } catch (error: any) {
-    let msg = error.message || 'Unbekannter Fehler';
+    let msg = error.message || "Unbekannter Fehler";
 
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === 'P2002') {
+      if (error.code === "P2002") {
         res.status(400);
-        msg = new Error('Nutzername oder E-Mail-Adresse bereits vergeben');
+        msg = new Error("Nutzername oder E-Mail-Adresse bereits vergeben");
       }
     }
 
