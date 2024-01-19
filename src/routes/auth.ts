@@ -2,7 +2,7 @@ import express, { Request, Response, NextFunction } from "express";
 import { validationResult } from "express-validator";
 import { validateAuth } from "../middlewares/validationMiddlewares";
 import { PrismaClient } from "@prisma/client";
-import { generateTokenObject } from "../services/utils";
+import { generateTokenObject } from "../../backups/utils";
 import bcrypt from "bcrypt";
 
 const router = express.Router();

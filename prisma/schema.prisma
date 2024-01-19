@@ -21,15 +21,23 @@ model User {
 }
 
 model Device {
-  id         String       @id @default(uuid())
-  slug       String       @unique
+  id         String            @id @default(uuid())
+  slug       String            @unique
   name       String
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
   lastSeen   DateTime?
-  status     DeviceStatus @default(OK)
-  statistics Statistics[]
+  status     DeviceStatus      @default(PENDING)
   readings   Reading[]
+  statistics DeviceStatistics?
+}
+
+enum DeviceStatus {
+  ACTIVE
+  ERROR
+  WARNING
+  INACTIVE
+  PENDING
 }
 
 model Reading {
@@ -43,26 +51,34 @@ model Reading {
   loop2      Float
   temp       Int?
   device     Device   @relation(fields: [deviceId], references: [id])
+
+  @@index([deviceId, measuredAt])
 }
 
-model Statistics {
-  slug       String   @unique @default(uuid())
-  type       String
-  value      Float
-  sampleSize Int
-  deviceId   String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  devide     Device   @relation(fields: [deviceId], references: [id])
+model DeviceStatistics {
+  id          String   @id @default(uuid())
+  deviceId    String   @unique
+  device      Device   @relation(fields: [deviceId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  iso1Mean    Float
+  iso1Median  Float
+  iso1StdDev  Float
+  iso2Mean    Float
+  iso2Median  Float
+  iso2StdDev  Float
+  loop1Mean   Float
+  loop1Median Float
+  loop1StdDev Float
+  loop2Mean   Float
+  loop2Median Float
+  loop2StdDev Float
+
+  @@index([deviceId])
 }
 
 enum Role {
   VIEWER
   USER
   ADMIN
-}
-
-enum DeviceStatus {
-  OK
-  ERROR
 }

@@ -2,7 +2,7 @@ import express, { Request, Response, NextFunction } from "express";
 import { validationResult } from "express-validator";
 import { PrismaClient, Prisma } from "@prisma/client";
 import { validateSignup } from "../middlewares/validationMiddlewares";
-import { generateTokenObject } from "../services/utils";
+import { generateTokenObject } from "../../backups/utils";
 import bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();

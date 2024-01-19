@@ -1,7 +1,8 @@
+"use strict";
 import app from "./app";
-import cronJobs from "./cronJobs";
-import main from "./services/dataAnalyze";
+import handleDevices from "./services/deviceModule";
 
+// Start the server
 const port = process.env.PORT || 3333;
 app.listen(port, () => {
   /* eslint-disable no-console */
@@ -9,5 +10,5 @@ app.listen(port, () => {
   /* eslint-enable no-console */
 });
 
-cronJobs();
-main();
+// Logic
+handleDevices();
