@@ -22,6 +22,9 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
+app.get("/", (req, res) => {
+  res.type("html").send(`<h1>Hello world!</h1>`);
+});
 // Before API Route
 // app.use(protectedRoute);
 
