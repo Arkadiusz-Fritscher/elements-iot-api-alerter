@@ -1,11 +1,11 @@
-import { ReadingData } from '../interfaces/ElementsResponse';
-import { PrismaClient, Device, DeviceStatus } from '@prisma/client';
-import logger from './loggerModule';
-import useElement from './elementModule';
+import { ReadingData } from "../interfaces/ElementsResponse";
+import { PrismaClient, Device, DeviceStatus } from "@prisma/client";
+import logger from "./loggerModule";
+import useElement from "./elementModule";
 
 const prisma = new PrismaClient();
 
-export const initiateDeviceReadings = async (id: Device['id']) => {
+export const initiateDeviceReadings = async (id: Device["id"]) => {
   try {
     logger.info(`Initiating readings for device ${id}`);
     const storedDevice = await prisma.device.findUnique({
@@ -26,15 +26,15 @@ export const initiateDeviceReadings = async (id: Device['id']) => {
 
     if (storedDevice._count?.readings !== 0 || storedDevice.status !== DeviceStatus.PENDING) {
       logger.warn(
-        `Initiating readings for device ${id} failed. Device already has readings or status isn't pending`,
+        `Initiating readings for device ${id} failed. Device already has readings or status isn't pending`
       );
       return;
     }
 
     const elementsReadings = (await useElement.getReadings(id, {
-      sort: 'inserted_at',
-      sortDirection: 'desc',
-      filter: 'data.iso1!=null&&data.iso2!=null&&data.loop1!=null&&data.loop2!=null',
+      sort: "inserted_at",
+      sortDirection: "desc",
+      filter: "data.iso1!=null&&data.iso2!=null&&data.loop1!=null&&data.loop2!=null",
     })) as ReadingData[];
 
     if (!elementsReadings?.length) {
@@ -47,7 +47,7 @@ export const initiateDeviceReadings = async (id: Device['id']) => {
     // Remove readings with same meas_timestamp
     const uniqueReadings = elementsReadings.filter(
       (reading, index, self) =>
-        index === self.findIndex((r) => r.data.meas_timestamp === reading.data.meas_timestamp),
+        index === self.findIndex((r) => r.data.meas_timestamp === reading.data.meas_timestamp)
     );
 
     logger.info(`Unique readings for device ${id}: ${uniqueReadings.length}`);
@@ -76,6 +76,10 @@ export const initiateDeviceReadings = async (id: Device['id']) => {
         status: DeviceStatus.ACTIVE,
       },
     });
+
+    logger.info(`Device ${id} status updated to active`);
+
+    return storedReadings;
   } catch (error) {
     logger.error(error);
   }

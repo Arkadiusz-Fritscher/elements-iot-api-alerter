@@ -112,7 +112,7 @@ export const handleDevices = () => {
   setInterval(() => {
     logger.info("Comparing devices");
     compareDevices();
-  }, 1000 * 60 * 6);
+  }, 1000 * 60 * 60 * 3);
   // compareDevices();
 };
 
