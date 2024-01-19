@@ -26,8 +26,8 @@ app.get("/", (req, res) => {
   res.type("html").send(`<h1>Hello world!</h1>`);
 });
 // Before API Route
-// app.use(protectedRoute);
 
+app.use(protectedRoute);
 // API Routes
 app.use("/api/v1", api);
 
