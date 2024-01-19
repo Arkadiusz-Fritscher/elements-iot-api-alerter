@@ -1,7 +1,7 @@
 {
-  "name": "express-api-starter-ts",
-  "version": "1.2.0",
-  "description": " A basic starter for an express.js API with Typescript",
+  "name": "element-iot-api-bridge",
+  "version": "0.0.1",
+  "description": "A express.js API with Typescript bridge between Element IoT and other services",
   "main": "src/index.ts",
   "scripts": {
     "start": "ts-node src/index.ts",
@@ -12,10 +12,10 @@
     "typecheck": "tsc --noEmit"
   },
   "keywords": [],
-  "author": "CJ R. <cj@null.computer> (https://w3cj.now.sh)",
+  "author": "A.Frtischer. <fritscher.dev@gmail.com> (https:fritscher.dev)",
   "repository": {
     "type": "git",
-    "url": "https://github.com/w3cj/express-api-starter.git"
+    "url": "https://github.com/Arkadiusz-Fritscher/elements-iot-api-alerter"
   },
   "license": "MIT",
   "dependencies": {
