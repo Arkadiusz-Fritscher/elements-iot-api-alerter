@@ -77,4 +77,4 @@ dist
 # local docker developing database
 db
 *.log
-/backups
+elementRequest.*

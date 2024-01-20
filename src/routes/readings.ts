@@ -67,7 +67,6 @@ router.post("/element", async (req: Request, res: Response, next: NextFunction) 
         logger.info("Data saved successfully");
       }
     );
-
     logger.debug(body);
 
     return res.status(201).json({ status: "ok", message: "Readings saved successfully" });
