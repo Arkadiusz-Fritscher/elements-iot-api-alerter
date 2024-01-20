@@ -2,27 +2,10 @@
 
 ## Documentation
 
-### Grundlegende Ordnerstruktur:
+## Used services
 
-**Routes:**
-
-- Trenne Routen in verschiedene Dateien oder Ordner, um die Lesbarkeit und Wartbarkeit zu verbessern. Zum Beispiel könntest du einen Ordner routes erstellen und darin separate Dateien für verschiedene Routengruppen haben (z. B. users.js, posts.js).
-
-**Controller:**
-
-- Halte die Logik für jede Route sauber und trenne sie von den Routendefinitionen. Die Logik kann in Controllern organisiert werden, die in der Regel Funktionen für verschiedene Routen enthalten.
-
-**Middlewares:**
-
-- Wenn du benutzerdefinierte Middlewares hast, können diese in einem separaten Ordner gespeichert werden, um die Wiederverwendbarkeit zu erleichtern und den Code sauber zu halten.
-
-**Models:**
-
-- Wenn du mit einer Datenbank arbeitest, können die Modelle oder Schemas für die Datenbankzugriffe in einem Ordner wie models organisiert werden.
-
-**Services/Utilities:**
-
-- Für Dienste oder Hilfsfunktionen, die in mehreren Teilen der Anwendung verwendet werden, könntest du einen Ordner services oder utils haben.
+- [Supabase Database](https://supabase.com/dashboard/project/pjdinmhhkjbcxdzqocar)
+- [Render Node Server](https://dashboard.render.com/web/srv-cmlapqud3nmc73d9hne0)
 
 ## Includes API Server utilities:
 

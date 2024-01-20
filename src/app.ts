@@ -27,7 +27,7 @@ app.get("/", (req, res) => {
 });
 // Before API Route
 
-app.use(protectedRoute);
+// app.use(protectedRoute);
 // API Routes
 app.use("/api/v1", api);
 
