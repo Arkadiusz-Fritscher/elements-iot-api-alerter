@@ -1,6 +1,6 @@
-'use strict';
-import app from './app';
-import handleDevices from './services/deviceModule';
+"use strict";
+import app from "./app";
+import { handleDevices } from "./services/deviceModule";
 
 // Start the server
 const port = process.env.PORT || 3333;

@@ -78,3 +78,4 @@ dist
 db
 *.log
 elementRequest.*
+docker-compose.yml

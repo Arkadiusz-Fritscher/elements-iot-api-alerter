@@ -21,6 +21,12 @@ model User {
   username  String    @unique
 }
 
+enum Role {
+  VIEWER
+  USER
+  ADMIN
+}
+
 model Device {
   id         String            @id @default(uuid())
   slug       String            @unique
@@ -31,6 +37,8 @@ model Device {
   status     DeviceStatus      @default(PENDING)
   readings   Reading[]
   statistics DeviceStatistics?
+  limit      Limit?            @relation(fields: [limitId], references: [id])
+  limitId    Int?
 }
 
 enum DeviceStatus {
@@ -39,6 +47,18 @@ enum DeviceStatus {
   WARNING
   INACTIVE
   PENDING
+}
+
+model Limit {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  batteryMin  Float?
+  iso1Min     Float
+  iso2Min     Float
+  devices     Device[]
 }
 
 model Reading {
@@ -78,8 +98,12 @@ model DeviceStatistics {
   @@index([deviceId])
 }
 
-enum Role {
-  VIEWER
-  USER
-  ADMIN
+model Settings {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  key         String   @unique
+  value       String
 }

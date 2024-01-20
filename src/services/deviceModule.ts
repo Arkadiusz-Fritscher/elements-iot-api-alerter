@@ -7,15 +7,23 @@ import { PrismaClient, Device, DeviceStatus } from "@prisma/client";
 const prisma = new PrismaClient();
 
 const getDevicesToAdd = (elementsDevices: DeviceData[], databaseDevices: Device[]) => {
+  logger.info(
+    `Comparing ${elementsDevices.length} devices from Elements with ${databaseDevices.length} devices from the database`
+  );
   const devicesToAdd = elementsDevices.filter((elementDevice) => {
     return !databaseDevices.some((databaseDevice) => {
       return databaseDevice.id === elementDevice.id;
     });
   });
+
+  logger.info(`Found ${devicesToAdd.length} devices to add to the database`);
   return devicesToAdd;
 };
 
 const getDevicesToUpdate = (elementsDevices: DeviceData[], databaseDevices: Device[]) => {
+  logger.info(
+    `Comparing ${elementsDevices.length} devices from Elements with ${databaseDevices.length} devices from the database`
+  );
   const devicesToUpdate = elementsDevices.filter((elementDevice) => {
     return databaseDevices.some((databaseDevice) => {
       return (
@@ -24,19 +32,27 @@ const getDevicesToUpdate = (elementsDevices: DeviceData[], databaseDevices: Devi
       );
     });
   });
+
+  logger.info(`Found ${devicesToUpdate.length} devices to update in the database`);
   return devicesToUpdate;
 };
 
 const getDevicesToDeactivate = (elementsDevices: DeviceData[], databaseDevices: Device[]) => {
+  logger.info(
+    `Comparing ${elementsDevices.length} devices from Elements with ${databaseDevices.length} devices from the database`
+  );
   const devicesToDeactivate = databaseDevices.filter((databaseDevice) => {
     return !elementsDevices.some((elementDevice) => {
       return databaseDevice.id === elementDevice.id;
     });
   });
+
+  logger.info(`Found ${devicesToDeactivate.length} devices to deactivate in the database`);
   return devicesToDeactivate;
 };
 
 const addDevices = (devicesToAdd: DeviceData[]) => {
+  logger.info(`Adding ${devicesToAdd.length} devices to the database`);
   devicesToAdd.forEach(async (device) => {
     try {
       const newDevice = await prisma.device.create({
@@ -56,6 +72,7 @@ const addDevices = (devicesToAdd: DeviceData[]) => {
 };
 
 const updateDevices = (devicesToUpdate: DeviceData[]) => {
+  logger.info(`Updating ${devicesToUpdate.length} devices in the database`);
   devicesToUpdate.forEach(async (device) => {
     try {
       const updatedDevice = await prisma.device.update({
@@ -76,6 +93,7 @@ const updateDevices = (devicesToUpdate: DeviceData[]) => {
 };
 
 const deactivateDevices = (devicesToDeactivate: Device[]) => {
+  logger.info(`Deactivating ${devicesToDeactivate.length} devices in the database`);
   devicesToDeactivate.forEach(async (device) => {
     try {
       const updatedDevice = await prisma.device.update({
@@ -93,27 +111,60 @@ const deactivateDevices = (devicesToDeactivate: Device[]) => {
   });
 };
 
-const compareDevices = async () => {
+const checkDevicesToUpdate = async () => {
   try {
+    logger.info("Checking devices to update");
+
     const elementsDevices = await useElement.getDevicesByTagId();
     const databaseDevices = await prisma.device.findMany();
-    const devicesToAdd = getDevicesToAdd(elementsDevices, databaseDevices);
+
     const devicesToUpdate = getDevicesToUpdate(elementsDevices, databaseDevices);
     const devicesToDeactivate = getDevicesToDeactivate(elementsDevices, databaseDevices);
-    addDevices(devicesToAdd);
-    updateDevices(devicesToUpdate);
-    deactivateDevices(devicesToDeactivate);
+
+    if (devicesToUpdate?.length) {
+      updateDevices(devicesToUpdate);
+    }
+
+    if (devicesToDeactivate?.length) {
+      deactivateDevices(devicesToDeactivate);
+    }
+
+    logger.info("Device update finished");
+  } catch (error) {
+    logger.error(error);
+  }
+};
+
+const initializeDevices = async () => {
+  try {
+    logger.info("Device initialization started");
+    const elementsDevices = await useElement.getDevicesByTagId();
+    const databaseDevices = await prisma.device.findMany();
+
+    const devicesToAdd = getDevicesToAdd(elementsDevices, databaseDevices);
+
+    if (devicesToAdd?.length) {
+      addDevices(devicesToAdd);
+    }
+
+    logger.info("Device initialization finished");
   } catch (error) {
     logger.error(error);
   }
 };
 
 export const handleDevices = () => {
+  const initializationIntervalInMinutes = 10;
+
   setInterval(() => {
-    logger.info("Comparing devices");
-    compareDevices();
-  }, 1000 * 60 * 60 * 3);
-  // compareDevices();
+    initializeDevices();
+  }, 1000 * 60 * initializationIntervalInMinutes);
+
+  const updateIntervalInMinutes = 60;
+
+  setInterval(() => {
+    checkDevicesToUpdate();
+  }, 1000 * 60 * updateIntervalInMinutes);
 };
 
 export default handleDevices;
