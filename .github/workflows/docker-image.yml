@@ -2,36 +2,35 @@ name: Docker Image CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
-
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v3
-      
-    - name: Build and push Docker image
-      run: |
-        echo ${{ secrets.DOCKER_SSH_PRIVATE_KEY }} > ssh_key.pem
-        chmod 600 ssh_key.pem
-        eval "$(ssh-agent -s)"
-        ssh-add ssh_key.pem
-        docker build -t element-api-bride::$(date +%s).
-        docker save element-api-bride::$(date +%s) | ssh -i ssh_key.pem -o StrictHostKeyChecking=no ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_HOST }} 'docker load'
-        
-    - name: SSH Deploy to server
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.SERVER_HOST }}
-        username: ${{ secrets.SERVER_USERNAME }}
-        key: ${{ secrets.DOCKER_SSH_PRIVATE_KEY }}
-        port: ${{ secrets.SERVER_PORT }}
-        script: |
-          docker stop element-api-bride || true
-          docker rm element-api-bride || true
-          docker run -d --name element-api-bride -p 3000:3000 element-api-bride::$(date +%s)
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Build and push Docker image
+        run: |
+          echo ${{ secrets.DOCKER_SSH_PRIVATE_KEY }} > ssh_key.pem
+          chmod 600 ssh_key.pem
+          eval "$(ssh-agent -s)"
+          ssh-add ssh_key.pem
+          docker build -t element-api-bride::$(date +%s).
+          docker save element-api-bride::$(date +%s) | ssh -i ssh_key.pem -o StrictHostKeyChecking=no ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_HOST }} 'docker load'
+
+      - name: SSH Deploy to server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.DOCKER_SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SERVER_PORT }}
+          script: |
+            docker stop element-api-bride || true
+            docker rm element-api-bride || true
+            docker run -d --name element-api-bride -p 3000:3000 element-api-bride::$(date +%s)
