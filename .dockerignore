@@ -4,3 +4,4 @@ docs
 .*log
 README.md
 *.dev.yml
+.env.dev
