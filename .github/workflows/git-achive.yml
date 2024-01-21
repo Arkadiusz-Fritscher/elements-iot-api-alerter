@@ -3,8 +3,8 @@ name: Send to Server
 on:
   push:
     branches: [main]
-    paths:
-      - "*"
+  pull_request:
+    branches: [main]
 
 jobs:
   deploy:
