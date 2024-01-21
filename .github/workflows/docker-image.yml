@@ -35,12 +35,3 @@ jobs:
           docker stop element-api-bride || true
           docker rm element-api-bride || true
           docker run -d --name element-api-bride -p 3000:3000 element-api-bride::$(date +%s)
-		
-		
-		
-		
-
-    
-  
-  
-    
