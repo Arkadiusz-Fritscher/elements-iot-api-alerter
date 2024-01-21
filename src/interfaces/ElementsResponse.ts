@@ -1,4 +1,4 @@
-import { Device, Reading, Point } from 'elementiot-client/lib/models';
+import { Device, Reading, Point } from "elementiot-client/lib/models";
 
 export interface Data {
   battery: number;
@@ -10,14 +10,14 @@ export interface Data {
   iso2: number;
   loop1: number;
   loop2: number;
-  meas_timestamp: string;
+  meas_timestamp: Date;
   temp?: number;
   error_error_eeprom_write?: number;
 }
 
 export enum ContactState {
-  Open = 'open',
-  Closed = 'closed',
+  Open = "open",
+  Closed = "closed",
 }
 
 /**
@@ -72,7 +72,7 @@ export interface Opts {
 }
 
 export enum Region {
-  Eu863 = 'EU863',
+  Eu863 = "EU863",
 }
 export interface LnsSessionContext {
   a_fcnt_down: number;

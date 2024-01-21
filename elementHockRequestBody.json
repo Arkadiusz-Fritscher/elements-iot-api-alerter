@@ -1,0 +1,210 @@
+[
+  {
+    "data": {
+      "battery": 3.465,
+      "contact1": 1,
+      "contact1_state": "open",
+      "contact2": 1,
+      "contact2_state": "open",
+      "iso1": 10000,
+      "iso2": 10000,
+      "loop1": 1680,
+      "loop2": 1673,
+      "meas_timestamp": "1972-11-04T06:00:13Z",
+      "temp": -1
+    },
+    "device": {
+      "default_graph_preset_id": "63615475-9189-4e26-816d-a0bec903928b",
+      "default_layers_id": null,
+      "default_packets_view_id": null,
+      "default_readings_view_id": "91bc948a-af8f-4e7f-9b23-e6d1f0f9721e",
+      "deleted_at": null,
+      "icon": "memory",
+      "id": "df684f2a-8b4c-4e03-9658-72f334b825bb",
+      "inserted_at": "2023-07-17T08:34:06.355800Z",
+      "last_readings": [],
+      "location": null,
+      "mandate_id": "c7950887-cac6-42e0-ac3b-002373ad1b59",
+      "meta": null,
+      "name": "IR-01 (Montageort: Schrank im Rad)",
+      "parser_id": "a773209a-7685-4580-bae9-7c01e8035276",
+      "slug": "ir-01",
+      "static_location": false,
+      "tags": [
+        {
+          "color_hue": 141,
+          "default_devices_view_id": null,
+          "default_graph_preset_id": "63615475-9189-4e26-816d-a0bec903928b",
+          "default_layers_id": null,
+          "default_packets_view_id": null,
+          "default_readings_view_id": "c327913b-85aa-44e6-9472-a046c9d7815b",
+          "description": "Alle derzeit aktiven Trassenrechner, die Messungen durchführen.",
+          "group_interface_id": null,
+          "id": "b6ef78e2-d8f1-4229-8657-ad372c86ec53",
+          "inserted_at": "2023-01-17T08:21:30.107611Z",
+          "mandate_id": "c7950887-cac6-42e0-ac3b-002373ad1b59",
+          "name": "Kunden / ESWE-Versorgung / Fernwärme 22702-FL-1-18-256 / Trassenrechner",
+          "parent_id": "4bdfc6b5-7e69-4451-8358-77f35a8b5cdb",
+          "path": [
+            "53d1eb13-94ae-4ee6-bd5a-7049fbf18e27",
+            "ece0d91c-ed46-4944-aabd-2950dd44ca79",
+            "4bdfc6b5-7e69-4451-8358-77f35a8b5cdb",
+            "b6ef78e2-d8f1-4229-8657-ad372c86ec53"
+          ],
+          "slug": "kunden-eswe-versorgung-fernwaerme-trassenrechner",
+          "stats": null,
+          "updated_at": "2024-01-20T08:49:55.341102Z"
+        }
+      ],
+      "template_id": null,
+      "updated_at": "2024-01-20T08:49:30.938878Z"
+    },
+    "device_id": "df684f2a-8b4c-4e03-9658-72f334b825bb",
+    "id": "9755b400-8aab-408c-a760-6a0022146419",
+    "inserted_at": "2024-01-20T14:00:47.265931Z",
+    "location": null,
+    "measured_at": "2024-01-20T14:00:47.186405Z",
+    "packet": {
+      "device_id": "df684f2a-8b4c-4e03-9658-72f334b825bb",
+      "driver": null,
+      "id": "61fe486f-8ab2-41f1-8b04-f426c780c646",
+      "inserted_at": "2024-01-20T14:00:47.213725Z",
+      "interface_id": "929ab6b4-1220-4c3f-9376-52e8fd17236c",
+      "meta": {
+        "ack": false,
+        "adr": false,
+        "adr_ack_req": false,
+        "chan": 4,
+        "codr": "4/5",
+        "confirm": false,
+        "data_rate": 0,
+        "datr": "SF12BW125",
+        "dev_nonce": null,
+        "frame_count_up": 133,
+        "frame_port": 1,
+        "frequency": 867.9,
+        "gateway_stats": [
+          {
+            "router_id": 2521330553829,
+            "router_id_hex": "0000024B0B0313E5",
+            "rssi": -109,
+            "snr": 2.8,
+            "tmst": 3814286772
+          },
+          {
+            "router_id": 123656386842009,
+            "router_id_hex": "00007076FF030D99",
+            "rssi": -118,
+            "snr": -1.8,
+            "tmst": 2277349316
+          },
+          {
+            "router_id": 2521330551015,
+            "router_id_hex": "0000024B0B0308E7",
+            "rssi": -120,
+            "snr": -5.2,
+            "tmst": 3330396620
+          },
+          {
+            "router_id": 2521330551333,
+            "router_id_hex": "0000024B0B030A25",
+            "rssi": -112,
+            "snr": -6,
+            "tmst": 412912228
+          },
+          {
+            "router_id": 2521330553893,
+            "router_id_hex": "0000024B0B031425",
+            "rssi": -119,
+            "snr": -16,
+            "tmst": 525166252
+          },
+          {
+            "router_id": 2521330553842,
+            "router_id_hex": "0000024B0B0313F2",
+            "rssi": -120,
+            "snr": -18,
+            "tmst": 4264577476
+          },
+          {
+            "router_id": 2521330553868,
+            "router_id_hex": "0000024B0B03140C",
+            "rssi": -120,
+            "snr": -7,
+            "tmst": 2533194308
+          },
+          {
+            "router_id": 2521330553894,
+            "router_id_hex": "0000024B0B031426",
+            "rssi": -115,
+            "snr": -16.8,
+            "tmst": 564170212
+          },
+          {
+            "router_id": 123656386866684,
+            "router_id_hex": "00007076FF036DFC",
+            "rssi": -113,
+            "snr": 2.5,
+            "tmst": 3225356820
+          },
+          {
+            "router_id": 123656386867023,
+            "router_id_hex": "00007076FF036F4F",
+            "rssi": -123,
+            "snr": -5.8,
+            "tmst": 4132700740
+          },
+          {
+            "router_id": 2521330553848,
+            "router_id_hex": "0000024B0B0313F8",
+            "rssi": -120,
+            "snr": -10,
+            "tmst": 3800069508
+          }
+        ],
+        "lns_packet_uuid": "61fe486f-8ab2-41f1-8b04-f426c780c646",
+        "lorawan_toa_ms": 1810.4320000000002,
+        "mac_commands": [],
+        "modu": "LORA",
+        "region": "eu863",
+        "region_meta": {
+          "bandwidth": 125,
+          "bitrate": 250,
+          "code": "eu863",
+          "datarate": 0,
+          "name": "EU863",
+          "spreadingfactor": 12
+        },
+        "rfch": 0,
+        "size": 34,
+        "stat": 1,
+        "updated": true
+      },
+      "packet_type": "up",
+      "payload": "0558C96D27100690271006890D89FFFF0F00000000",
+      "payload_encoding": "binary",
+      "skip_parsers": false,
+      "transceived_at": "2024-01-20T14:00:47.186405Z"
+    },
+    "packet_id": "61fe486f-8ab2-41f1-8b04-f426c780c646",
+    "parser_id": "a773209a-7685-4580-bae9-7c01e8035276"
+  },
+
+  {
+    "data": {
+      "battery": 3.385,
+      "iso1": 10000,
+      "iso2": 10000,
+      "loop1": 3255,
+      "loop2": 3267,
+      "meas_timestamp": "2024-01-20T06:00:13Z"
+    },
+    "device_id": "98985dc6-66dd-497a-ae4f-b33ec3ffc28d",
+    "id": "fd220bd4-6d83-4beb-95df-5229d785baf9",
+    "inserted_at": "2024-01-20T16:24:15.650765Z",
+    "location": null,
+    "measured_at": "2024-01-20T16:24:15.460092Z",
+    "packet_id": "62b5d2c7-582e-404b-b7a0-cd39ef3f6da1",
+    "parser_id": "a773209a-7685-4580-bae9-7c01e8035276"
+  }
+]

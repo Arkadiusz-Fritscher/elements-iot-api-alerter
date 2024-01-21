@@ -1,5 +1,5 @@
-import { Device } from '@prisma/client';
-import { DeviceData } from '../../interfaces/ElementsResponse';
+import { Device } from "@prisma/client";
+import { DeviceData } from "../../interfaces/ElementsResponse";
 
 export const getDevicesToAdd = (elementsDevices: DeviceData[], databaseDevices: Device[]) => {
   const devicesToAdd = elementsDevices.filter((elementDevice) => {

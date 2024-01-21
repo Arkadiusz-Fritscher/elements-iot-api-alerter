@@ -1,17 +1,19 @@
+import dotenv from "dotenv";
 import express from "express";
 import morgan from "morgan";
 import helmet from "helmet";
 import cors from "cors";
-
 // Middlewares
 import { protectedRoute } from "./middlewares/protectedMiddleware";
 import { errorHandler, notFound } from "./middlewares/errorMiddlewares";
-
 // Routes
 import api from "./routes";
+// App Logic
+import handleDevices from "./services/deviceModule";
 
-// Utils
-require("dotenv").config();
+dotenv.config();
+
+handleDevices();
 
 // App
 const app = express();
