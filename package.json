@@ -4,10 +4,10 @@
   "description": "A express.js API with Typescript bridge between Element IoT and other services",
   "main": "src/index.ts",
   "scripts": {
-    "start:ts": "ts-node src/index.ts",
     "dev": "nodemon",
     "build": "tsc",
     "start": "node dist/index.js",
+    "start:ts": "ts-node src/index.ts",
     "lint": "eslint --fix src test",
     "test": "jest",
     "typecheck": "tsc --noEmit"
