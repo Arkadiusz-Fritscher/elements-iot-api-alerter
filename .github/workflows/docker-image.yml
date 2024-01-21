@@ -16,10 +16,10 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          echo ${{ secrets.DOCKER_SSH_PRIVATE_KEY }} > ssh_key.pem
-          chmod 600 ssh_key.pem
+          echo "${{ secrets.GITHUB_ACTIONS_SSH_KEY }}" > ~/.ssh/github_actions_key
+          chmod 600 ~/.ssh/github_actions_key
           eval "$(ssh-agent -s)"
-          ssh-add ssh_key.pem
+          ssh-add ~/.ssh/github_actions_key
           docker build -t element-api-bride::$(date +%s).
           docker save element-api-bride::$(date +%s) | ssh -i ssh_key.pem -o StrictHostKeyChecking=no ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_HOST }} 'docker load'
 
