@@ -1,5 +1,5 @@
 FROM node:lts-alpine
-ENV PORT=3131
+ENV PORT=3000
 
 RUN mkdir -p /app
 WORKDIR /app
