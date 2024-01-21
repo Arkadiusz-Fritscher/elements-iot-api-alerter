@@ -4,13 +4,13 @@
   "description": "A express.js API with Typescript bridge between Element IoT and other services",
   "main": "src/index.ts",
   "scripts": {
-    "start": "ts-node src/index.ts",
-    "dev": "NODE_ENV=development nodemon",
+    "start:ts": "ts-node src/index.ts",
+    "dev": "nodemon",
     "build": "tsc",
+    "start": "node dist/src/index.js",
     "lint": "eslint --fix src test",
     "test": "jest",
-    "typecheck": "tsc --noEmit",
-    "prisma:push": "NODE_ENV=development && npx prisma db push "
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [],
   "author": "A.Frtischer. <fritscher.dev@gmail.com> (https:fritscher.dev)",

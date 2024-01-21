@@ -14,6 +14,6 @@
   "include": [
     "./*.js",
     "src/**/*.ts",
-    "test/**/*.ts", "backups/dataAccess.ts", "backups/dataAnalyze.ts", "backups/dataStorage.ts", "backups/utils.ts",
+    "test/**/*.ts",
   ],
 }
