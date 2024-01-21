@@ -80,3 +80,4 @@ db
 *.log
 elementRequest.*
 docker-compose.yml
+docs
