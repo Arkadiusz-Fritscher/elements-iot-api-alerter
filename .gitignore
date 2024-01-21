@@ -79,5 +79,5 @@ dist
 db
 *.log
 elementRequest.*
-docker-compose.yml
+docker-compose.dev.yml
 docs
